@@ -36,17 +36,14 @@ materials:
       g: 0.6470
       b: 0
 objects:
-  #- Model:
-  #    mesh: models/bound-bunny_1k.smf
-  #    material: orange
-  - Sphere:
+  - !Sphere
       center:
         - -0.6
         - 0.2
         - 0.0
       radius: 0.5
       material: red
-  - Sphere:
+  - !Sphere
       center:
         - 0.6
         - -0.2

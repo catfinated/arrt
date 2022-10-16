@@ -4,7 +4,7 @@ bgcolor:
   b: 0
 width: 512
 height: 512
-mesh_dir: ../../smf_models
+mesh_dir: models
 ambient:
   r: 1.0
   g: 1.0
@@ -116,21 +116,21 @@ materials:
       b: 0.508
     shininess: 6
 objects:
-  - Sphere:
+  - !Sphere
       center:
         - 0.0
         - 1.0
         - 0.0
       radius: 0.4
       material: blue
-  - Sphere:
+  - !Sphere
       center:
         - 0.0
         - -1.0
         - 0.0
       radius: 0.4
       material: red
-  - Model:
+  - !Model
       mesh: bound-bunny_1k.smf
       material: gold
       transform:

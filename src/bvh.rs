@@ -75,8 +75,8 @@ impl<T: BvhNode> BVH<T> {
                 }
             }
             else {
-                let maybe_l_surf = self.left.as_ref().unwrap().intersect(ray, range, f);
-                let maybe_r_surf = self.right.as_ref().unwrap().intersect(ray, range, f);
+                let maybe_l_surf = self.left.as_ref().map_or(None, |node| node.intersect(ray, range, f));
+                let maybe_r_surf = self.right.as_ref().map_or(None, |node| node.intersect(ray, range, f));
 
                 match (maybe_l_surf, maybe_r_surf) {
                     (Some(l_surf), Some(r_surf)) => {

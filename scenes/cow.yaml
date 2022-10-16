@@ -115,8 +115,8 @@ materials:
       b: 0.508
     shininess: 6
 objects:
-  - Model:
-      mesh: models/bound-bunny_5k.smf
+  - !Model
+      mesh: models/bound-cow.smf
       material: emerald
       transform:
         rotate:
