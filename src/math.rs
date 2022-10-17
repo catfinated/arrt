@@ -17,15 +17,15 @@ pub fn to_degrees(r: Radian) -> Degree {
 }
 
 impl Radian {
-    fn sin(&self) -> f32 { return self.0.sin(); }
-    fn cos(&self) -> f32 { return self.0.cos(); }
-    fn tan(&self) -> f32 { return self.0.tan(); }
+    fn sin(&self) -> f32 { self.0.sin() }
+    fn cos(&self) -> f32 { self.0.cos() }
+    fn tan(&self) -> f32 { self.0.tan() }
 }
 
 impl Degree {
-    pub fn sin(&self) -> f32 { return to_radians(*self).sin(); }
-    pub fn cos(&self) -> f32 { return to_radians(*self).cos(); }
-    pub fn tan(&self) -> f32 { return to_radians(*self).tan(); }
+    pub fn sin(&self) -> f32 { to_radians(*self).sin() }
+    pub fn cos(&self) -> f32 { to_radians(*self).cos() }
+    pub fn tan(&self) -> f32 { to_radians(*self).tan() }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -73,15 +73,15 @@ impl Vec3 {
         self.dat[2]
     }
 
-    pub fn set_x(&mut self, x: f32) -> () {
+    pub fn set_x(&mut self, x: f32) {
         self.dat[0] = x;
     }
 
-    pub fn set_y(&mut self, y: f32) -> () {
+    pub fn set_y(&mut self, y: f32) {
         self.dat[1] = y;
     }
 
-    pub fn set_z(&mut self, z: f32) -> () {
+    pub fn set_z(&mut self, z: f32) {
         self.dat[2] = z;
     }
 }
@@ -220,6 +220,7 @@ pub struct Mat3 {
 }
 
 impl Mat3 {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(xx: f32, xy: f32, xz: f32,
                yx: f32, yy: f32, yz: f32,
                zx: f32, zy: f32, zz: f32) -> Mat3 {

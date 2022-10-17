@@ -1,21 +1,12 @@
-use super::math::{Ray, Range, Vec3};
+use crate::math::{Ray, Range, Vec3};
 
 use std::mem;
 use std::f32;
-
 
 #[derive(Copy, Clone, Debug)]
 pub struct AABB {
     min: Vec3,
     max: Vec3,
-}
-
-pub trait BvhNode {
-    //fn centroid(&self) -> Vec3;
-
-    //fn bbox(&self) -> AABB;
-
-    //fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel>;
 }
 
 fn nearly_zero(f: f32) -> bool {
@@ -98,6 +89,6 @@ impl AABB {
             return Some(t_far);
         }
 
-        return Some(t_near);
+        Some(t_near)
     }
 }

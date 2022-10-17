@@ -111,23 +111,22 @@ impl Framebuffer {
         }
     }
 
-    pub fn save_image(&self, path: &Path) -> () {
-        //let path = Path::new(r"image.png");
+    pub fn save_image(&self, path: &Path) {
         let file = File::create(path).unwrap();
-        let ref mut w = BufWriter::new(file);
+        let bufwriter = &mut BufWriter::new(file);
 
-        let mut encoder = png::Encoder::new(w, self.width, self.height);
+        let mut encoder = png::Encoder::new(bufwriter, self.width, self.height);
         encoder.set_color(png::ColorType::Rgb);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
 
         let srgb: Vec<u8> = self.data.iter().map(|f| (f * 255.0).round() as u8).collect();
 
-        writer.write_image_data(&srgb).unwrap(); // Save
+        writer.write_image_data(&srgb).unwrap();
         println!("wrote {}", path.display());
     }
 
-    pub fn set_color(&mut self, x: u32, y: u32, color: &ColorRGB) -> () {
+    pub fn set_color(&mut self, x: u32, y: u32, color: &ColorRGB) {
         assert!(x < self.width);
         assert!(y < self.height);
         let idx: usize = ((y * self.width + x) * 3).try_into().unwrap();

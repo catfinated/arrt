@@ -1,8 +1,14 @@
-use super::math::*;
-use super::aabb::{AABB, BvhNode};
-use super::objects::Surfel;
+use crate::math::*;
+use crate::aabb::AABB;
+use crate::scene::Surfel;
 
 use std::cmp::Ordering;
+
+pub trait BvhNode {
+    fn centroid(&self) -> Vec3;
+    fn bbox(&self) -> AABB;
+    fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel>;
+}
 
 pub struct BVH<T: BvhNode> {
     left: Option<Box<BVH<T>>>,
@@ -18,29 +24,24 @@ impl<T: BvhNode> Default for BVH<T> {
 }
 
 impl<T: BvhNode> BVH<T> {
-
-    pub fn new<S, B>(mut objects: Vec<T>, axis: usize, sort: &S, bbox: &B) -> BVH<T>
-    where
-        S: Fn(&T, &T, usize) -> Ordering,
-        B: Fn(&[T]) -> AABB
-
+    pub fn new(mut objects: Vec<T>, axis: usize) -> BVH<T>
     {
-        objects.sort_unstable_by(|a, b| sort(a, b, axis));
+        objects.sort_unstable_by(|a, b| centroid_cmp(a, b, axis));
 
         if objects.len() <= 1 {
             println!("added BVH leaf with {} objects", objects.len());
             objects.shrink_to_fit();
-            let bbox = bbox(&objects[..]);
-            BVH{ left: None, right: None, objects: objects, bbox: bbox }
+            let bbox = compute_bbox(&objects[..]);
+            BVH{ left: None, right: None, objects, bbox }
         }
         else {
             let next_axis = (axis + 1) % 3;
             let mid = objects.len() / 2;
             let rhs = objects.split_off(mid);
-            let left = Box::new(BVH::new(objects, next_axis, sort, bbox));
-            let right = Box::new(BVH::new(rhs, next_axis, sort, bbox));
+            let left = Box::new(BVH::new(objects, next_axis));
+            let right = Box::new(BVH::new(rhs, next_axis));
             let bbox = left.bbox.merge(&right.bbox);
-            BVH{ left: Some(left), right: Some(right), objects: Vec::new(), bbox: bbox }
+            BVH{ left: Some(left), right: Some(right), objects: Vec::new(), bbox }
         }
     }
 
@@ -48,19 +49,8 @@ impl<T: BvhNode> BVH<T> {
         self.bbox.center()
     }
 
-    /*
-    pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
-        self.intersect_with(ray, range,
-                            &|ray: &Ray, range: Range, obj: &T| -> Option<Surfel>
-                            { obj.intersect(ray, range) })
-    }
-    */
-
-    pub fn intersect<F>(&self, ray: &Ray, mut range: Range, f: &F) -> Option<Surfel>
-    where
-        F: Fn(&Ray, Range, &T) -> Option<Surfel>
+    pub fn intersect(&self, ray: &Ray, mut range: Range) -> Option<Surfel>
     {
-
         let mut ret = None;
 
         if let Some(t) = self.bbox.intersect(ray, range) {
@@ -68,15 +58,15 @@ impl<T: BvhNode> BVH<T> {
 
             if !self.objects.is_empty() {
                 for object in self.objects.iter() {
-                    if let Some(surf) = f(ray, range, object) /*object.intersect(ray, range)*/ {
+                    if let Some(surf) = object.intersect(ray, range) {
                         range.max = surf.t;
                         ret = Some(surf);
                     }
                 }
             }
             else {
-                let maybe_l_surf = self.left.as_ref().map_or(None, |node| node.intersect(ray, range, f));
-                let maybe_r_surf = self.right.as_ref().map_or(None, |node| node.intersect(ray, range, f));
+                let maybe_l_surf = self.left.as_ref().and_then(|node| node.intersect(ray, range));
+                let maybe_r_surf = self.right.as_ref().and_then(|node| node.intersect(ray, range));
 
                 match (maybe_l_surf, maybe_r_surf) {
                     (Some(l_surf), Some(r_surf)) => {
@@ -96,5 +86,20 @@ impl<T: BvhNode> BVH<T> {
 
         ret
     }
+}
 
+fn compute_bbox<T: BvhNode>(objects: &[T]) -> AABB {
+    let mut bbox = AABB::maxmin();
+
+    for object in objects {
+        bbox = bbox.merge(&object.bbox());
+    }
+
+    bbox
+}
+
+fn centroid_cmp<T: BvhNode>(lhs: &T, rhs: &T, axis: usize) ->  Ordering {
+    let lhs_centroid = lhs.centroid();
+    let rhs_centroid = rhs.centroid();
+    lhs_centroid[axis].partial_cmp(&rhs_centroid[axis]).unwrap()
 }
