@@ -17,11 +17,14 @@ pub struct Material {
     pub shininess: f32,
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct MaterialID(pub usize);
+
 pub struct Surfel {
     pub t: f32,
     pub hit_point: Vec3,
     pub normal: Vec3,
-    pub material_id: usize
+    pub (super) material_id: MaterialID,
 }
 
 impl Default for Material {
@@ -36,3 +39,5 @@ impl Default for Material {
                shininess: 1.0_f32 }
     }
 }
+
+

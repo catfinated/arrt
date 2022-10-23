@@ -12,7 +12,7 @@ pub struct CameraConfig {
 }
 
 pub struct Camera {
-    eye: Vec3,
+    pub eye: Vec3,
     top_left: Vec3,
     xv: Vec3,
     yv: Vec3,

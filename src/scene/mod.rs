@@ -15,7 +15,6 @@ use serde;
 use serde_yaml;
 use serde::{Serialize, Deserialize};
 
-use crate::math::*;
 use crate::bvh::BVH;
 use crate::framebuffer::ColorRGB;
 
@@ -28,7 +27,7 @@ pub use lights::Light;
 pub use sphere::Sphere;
 pub use model::Model;
 pub use objects::Object;
-pub use material::{Material, Surfel};
+pub use material::{Material, MaterialID, Surfel};
 
 use mesh::Mesh;
 
@@ -52,7 +51,7 @@ struct SceneConfig {
 
 pub struct Scene {
     config: SceneConfig,
-    pub bvh: BVH<Object>,
+    materials_map: HashMap<String, MaterialID>,
 }
 
 impl Scene {
@@ -60,22 +59,27 @@ impl Scene {
         let yaml = fs::read_to_string(&fpath).unwrap();
         let config: SceneConfig = serde_yaml::from_str(&yaml).unwrap();
 
-        let mut map = HashMap::new();
+        let mut materials_map = HashMap::new();
         for (i, mat) in config.materials.iter().enumerate() {
-            map.insert(&mat.name, i);
+            materials_map.insert(mat.name.clone(), MaterialID(i));
         }
 
+        Scene{config, materials_map}
+    }
+
+    pub fn make_bvh(&self) -> BVH<Object>
+    {
         let mut objs = Vec::new();
-        let mesh_dir = &config.mesh_dir;
+        let mesh_dir = &self.config.mesh_dir;
         let mut meshes = HashMap::new();
 
-        for obj in &config.objects {
+        for obj in &self.config.objects {
             match obj {
                 ObjectConfig::Sphere(s) => {
-                    objs.push(Object::Sphere(Sphere::new(s, map[&s.material])));
+                    objs.push(Object::Sphere(Sphere::new(s, self.materials_map[&s.material])));
                 }
                 ObjectConfig::Model(m) => {
-                    let material_id = map[&m.material];
+                    let material_id = self.materials_map[&m.material];
                     let mesh: &Rc<Mesh> = meshes.entry(m.mesh.clone())
                         .or_insert_with(|| Rc::new(Mesh::new(&m.mesh, mesh_dir)));
                     objs.push(Object::Model(Model::new(Rc::clone(mesh),
@@ -85,13 +89,12 @@ impl Scene {
             }
         }
 
-        let bvh = BVH::new(objs, 0);
-        Scene{config, bvh}
+        BVH::new(objs, 0)
     }
 
-    pub fn intersect(&self, ray: &Ray) -> Option<Surfel> {
-        let range = Range{ min: 1e-6, max: std::f32::MAX };
-        self.bvh.intersect(ray, range)
+    pub fn make_camera(&self) -> Camera
+    {
+        Camera::new(&self.config.camera, self.width() as f32, self.height() as f32)
     }
 
     pub fn width(&self) -> u32 {
@@ -106,14 +109,6 @@ impl Scene {
         &self.config.lights
     }
 
-    pub fn camera(&self) -> &CameraConfig {
-        &self.config.camera
-    }
-
-    pub fn materials(&self) -> &Vec<Material> {
-        &self.config.materials
-    }
-
     pub fn ambient(&self) -> ColorRGB {
         self.config.ambient
     }
@@ -122,5 +117,8 @@ impl Scene {
         self.config.bgcolor
     }
 
-
+    pub fn material_for_surfel(&self, surfel: &Surfel) -> &Material
+    {
+        &self.config.materials[surfel.material_id.0]
+    }
 }

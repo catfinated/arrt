@@ -1,14 +1,13 @@
-use crate::scene::{Camera, Light, Scene, Surfel};
+use crate::scene::{Light, Scene, Surfel, Material};
 use crate::framebuffer::{Framebuffer, ColorRGB};
-use crate::math::{normalize, dot};
+use crate::math::{normalize, dot, Vec3};
 
 use std::time::{Instant, Duration};
 
-fn phong_shade<T: Light>(light: &T, surfel: &Surfel, scene: &Scene) -> ColorRGB {
-    let material = &scene.materials()[surfel.material_id];
+fn phong_shade<T: Light>(light: &T, eye: &Vec3, surfel: &Surfel, material: &Material) -> ColorRGB {
     let n = surfel.normal;
     let l = normalize(light.direction_from(surfel.hit_point)); // from P to light
-    let v = normalize(scene.camera().eye - surfel.hit_point);  // from P to viewer
+    let v = normalize(*eye - surfel.hit_point);  // from P to viewer
     let n_dot_l = dot(n, l).max(0.0_f32);
     let r = normalize((2.0_f32 * n_dot_l * n) - l);
     let r_dot_v = dot(r, v).max(0.0_f32);
@@ -25,10 +24,11 @@ pub fn render_scene(scene: &Scene) -> Framebuffer {
 
     let setup_start = Instant::now();
     let mut fb = Framebuffer::new(scene.width(), scene.height());
-    let camera = Camera::new(scene.camera(), scene.width() as f32, scene.height() as f32);
+    let camera = scene.make_camera();
+    let bvh = scene.make_bvh();
     let setup_end = Instant::now();
     println!("setup time: {:?}", setup_end - setup_start);
-    println!("bbox: {:?}", scene.bvh.bbox);
+    println!("bbox: {:?}", bvh.bbox);
 
     let mut count = 0;
     let mut sum = Duration::from_secs(0);
@@ -43,7 +43,7 @@ pub fn render_scene(scene: &Scene) -> Framebuffer {
 
             count += 1;
             let start = Instant::now();
-            let surfel = scene.intersect(&ray);
+            let surfel = bvh.intersect(&ray);
             let stop = Instant::now();
             let delta = stop - start;
             sum += delta;
@@ -53,12 +53,13 @@ pub fn render_scene(scene: &Scene) -> Framebuffer {
                 Some(surf) => {
                     hit_count += 1;
                     let mut color = ColorRGB::black();
+                    let material = scene.material_for_surfel(&surf);
+                    let ambient = scene.ambient() * material.ka * material.ambient;
+
                     for light in scene.lights().iter() {
-                        color = color + phong_shade(light, &surf, scene);
+                        color = color + phong_shade(light, &camera.eye, &surf, material);
                     }
 
-                    let mat = &scene.materials()[surf.material_id];
-                    let ambient = scene.ambient() * mat.ka * mat.ambient;
                     color = color + ambient;
                     color = color.clamp(0.0_f32, 1.0_f32);
                     fb.set_color(j, k, &color);

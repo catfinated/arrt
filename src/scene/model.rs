@@ -7,7 +7,7 @@ use crate::math::*;
 use crate::aabb::AABB;
 
 use super::mesh::Mesh;
-use super::material::Surfel;
+use super::material::{Surfel, MaterialID};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ModelConfig {
@@ -27,7 +27,7 @@ pub struct Transform {
 
 pub struct Model {
     mesh: Rc<Mesh>,
-    material: usize,
+    material: MaterialID,
     vertices: Vec<Vec3>,
     normals: Vec<Vec3>,
     pub bbox: AABB
@@ -58,7 +58,7 @@ impl Transform {
 }
 
 impl Model {
-    pub fn new(mesh: Rc<Mesh>, material: usize, transform: &Transform) -> Model {
+    pub fn new(mesh: Rc<Mesh>, material: MaterialID, transform: &Transform) -> Model {
         let m = transform.mat4();
 
         let mut vertices = Vec::with_capacity(mesh.vertices.len());

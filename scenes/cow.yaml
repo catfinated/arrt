@@ -117,11 +117,15 @@ materials:
 objects:
   - !Model
       mesh: models/bound-cow.smf
-      material: emerald
+      material: blue
       transform:
+        translate:
+          - 0.0
+          - 0.0
+          - 0.8
         rotate:
           - 0.0
-          - 0.0
+          - 45.0
           - 0.0
         scale:
           - 0.75

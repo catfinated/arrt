@@ -5,7 +5,7 @@ use std::io::{self, BufRead};
 use std::path::Path;
 
 use crate::math::*;
-use super::Surfel;
+use super::{Surfel, MaterialID};
 
 #[derive(Debug)]
 pub struct Triangle {
@@ -78,7 +78,7 @@ impl Triangle {
 
         let hit_point = ray.point_at(t);
         let normal = Vec3::new(0.0, 0.0, 0.0); // TODO
-        let material_id = 0;
+        let material_id = MaterialID(0);
 
         Some(Surfel{t, hit_point, normal, material_id})
     }
@@ -147,7 +147,7 @@ impl IndexedTriangle {
         let normal = (alpha * normals[self.i]) +
                      (beta * normals[self.j]) +
                      (gamma * normals[self.k]);
-        let material_id = 0;
+        let material_id = MaterialID(0);
 
         Some(Surfel{t, hit_point, normal, material_id})
     }

@@ -11,6 +11,7 @@ of what it can currently prodcue:
 
 ![Example 1](docs/scene.png)
 ![Example 2](docs/scene2.png)
+![Example 3](docs/cow.png)
 
 ## TODO
 

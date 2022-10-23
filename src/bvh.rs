@@ -49,7 +49,12 @@ impl<T: BvhNode> BVH<T> {
         self.bbox.center()
     }
 
-    pub fn intersect(&self, ray: &Ray, mut range: Range) -> Option<Surfel>
+    pub fn intersect(&self, ray: &Ray) -> Option<Surfel> {
+        let range = Range{ min: 1e-6, max: std::f32::MAX };
+        self.intersect_with_range(ray, range)
+    }
+
+    pub fn intersect_with_range(&self, ray: &Ray, mut range: Range) -> Option<Surfel>
     {
         let mut ret = None;
 
@@ -65,8 +70,8 @@ impl<T: BvhNode> BVH<T> {
                 }
             }
             else {
-                let maybe_l_surf = self.left.as_ref().and_then(|node| node.intersect(ray, range));
-                let maybe_r_surf = self.right.as_ref().and_then(|node| node.intersect(ray, range));
+                let maybe_l_surf = self.left.as_ref().and_then(|node| node.intersect_with_range(ray, range));
+                let maybe_r_surf = self.right.as_ref().and_then(|node| node.intersect_with_range(ray, range));
 
                 match (maybe_l_surf, maybe_r_surf) {
                     (Some(l_surf), Some(r_surf)) => {

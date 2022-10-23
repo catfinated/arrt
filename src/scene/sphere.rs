@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 use crate::math::*;
 use crate::aabb::AABB;
 
-use super::material::Surfel;
+use super::material::{Surfel, MaterialID};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SphereConfig {
@@ -16,12 +16,12 @@ pub struct SphereConfig {
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
-    pub material_id: usize,
+    pub material_id: MaterialID,
     pub bbox: AABB
 }
 
 impl Sphere {
-    pub fn new(config: &SphereConfig, material: usize) -> Sphere {
+    pub fn new(config: &SphereConfig, material: MaterialID) -> Sphere {
 
         let bbox = AABB::new(config.center - config.radius,
                              config.center + config.radius);
