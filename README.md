@@ -5,9 +5,15 @@ A Rust Ray Tracer. This is my hobby project for learning Rust. This is  mostly b
 tracer I wrote many years ago in a grad school class where the curriculum was based on the book
 "Ray Tracing from the Ground Up" by Kevin Suffern.
 
-This ray tracer is exteremly basic right now it only supports two types of objects: spheres and
-smf meshes and the only optimization done is using a bounding volume heirarchy. Here are some examples
-of what it can currently prodcue:
+## Features
+
+This ray tracer is exteremly basic right now but the following features are included:
+
+* Sphere and simple mesh rendering
+* Bounding volume hiearchy based on axis aligned bounding boxes
+* Adaptive super sampling (1 - 2x)
+
+Here are some examples of what it can currently prodcue:
 
 ![Example 1](docs/scene.png)
 ![Example 2](docs/scene2.png)
@@ -15,7 +21,7 @@ of what it can currently prodcue:
 
 ## TODO
 
-* antialiasing
 * instancing
 * reflections and refractions
 * bezeir pathes/curves
+* threading

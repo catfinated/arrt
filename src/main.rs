@@ -1,22 +1,22 @@
-use std::process;
 use std::time::Instant;
+use std::path::PathBuf;
 
-use arrt::args::parse_cli;
+use clap::Parser;
+
+use arrt::args::CliArgs;
 use arrt::render::render_scene;
 use arrt::scene::Scene;
 
 fn main() {
-    let args = parse_cli().unwrap_or_else(|err| {
-        println!("Problem parsing arguments: {}", err);
-        process::exit(1);
-    });
+    let args = CliArgs::parse();
     println!("cli args= {:?}", args);
 
     let scene = Scene::new(&args.scene);
-    let framebuf = render_scene(&scene);
+    let framebuf = render_scene(scene, args.sampling_depth);
 
     let start = Instant::now();
-    framebuf.save_image(&args.image);
+    let image = args.image.unwrap_or(PathBuf::from(args.scene.file_name().unwrap()).with_extension("png"));
+    framebuf.save_image(&image);
     let stop = Instant::now();
     println!("save image time: {:?}", stop - start);
 }

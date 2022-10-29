@@ -1,28 +1,14 @@
-use std::env;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-#[derive(Debug)]
+use clap::Parser;
+
+#[derive(Default, Debug, Parser)]
 pub struct CliArgs {
+    #[arg(short, long)]
     pub scene: PathBuf,
-    pub image: PathBuf,
-}
+    #[arg(short, long)]
+    pub image: Option<PathBuf>,
+    #[arg(short = 'S', long, default_value_t = 2, value_parser = clap::value_parser!(u8).range(0..3))]
+    pub sampling_depth: u8
 
-impl CliArgs {
-    pub fn new(args: &[String]) -> Result<CliArgs, &'static str> {
-        if args.len() < 2 {
-            return Err("not enough arguments");
-        }
-        let scene = PathBuf::from(&args[1]);
-        let image = if args.len() > 2 {
-            PathBuf::from(&args[2])
-        } else {
-            Path::new(scene.file_name().unwrap()).with_extension("png")
-        };
-        Ok(CliArgs{ scene, image })
-    }
-}
-
-pub fn parse_cli() -> Result<CliArgs, &'static str> {
-    let args: Vec<String> = env::args().collect();
-    CliArgs::new(&args)
 }

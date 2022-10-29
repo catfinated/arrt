@@ -2,7 +2,7 @@ use std::path::Path;
 use std::fs::File;
 use std::io::BufWriter;
 use std::convert::TryInto;
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Sub, Div, AddAssign};
 
 use serde::{Serialize, Deserialize};
 
@@ -22,9 +22,9 @@ fn clamp(val: f32, lo: f32, hi: f32) -> f32 {
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct ColorRGB {
-    r: f32,
-    g: f32,
-    b: f32
+    pub r: f32,
+    pub g: f32,
+    pub b: f32
 }
 
 impl ColorRGB {
@@ -51,6 +51,16 @@ impl ColorRGB {
     }
 }
 
+impl AddAssign for ColorRGB {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self {
+            r: self.r + other.r,
+            g: self.g + other.g,
+            b: self.b + other.b,
+        };
+    }
+}
+
 impl Add for ColorRGB {
     type Output = Self;
 
@@ -58,6 +68,16 @@ impl Add for ColorRGB {
         ColorRGB { r: self.r + other.r,
                    g: self.g + other.g,
                    b: self.b + other.b }
+    }
+}
+
+impl Sub for ColorRGB {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        ColorRGB { r: self.r - other.r,
+                   g: self.g - other.g,
+                   b: self.b - other.b }
     }
 }
 
@@ -89,10 +109,19 @@ impl Mul<ColorRGB> for f32 {
     }
 }
 
+impl Div<f32> for ColorRGB {
+    type Output = Self;
+
+    fn div(self, f: f32) -> ColorRGB {
+        ColorRGB { r: self.r / f,
+                   g: self.g / f,
+                   b: self.b / f }
+    }
+}
 
 pub struct Framebuffer {
-    width: u32,
-    height: u32,
+    pub width: u32,
+    pub height: u32,
     data: Vec<f32>
 }
 
@@ -133,5 +162,12 @@ impl Framebuffer {
         self.data[idx] = color.r;
         self.data[idx + 1] = color.g;
         self.data[idx + 2] = color.b;
+    }
+
+    pub fn get_color(&self, x: u32, y: u32) -> ColorRGB {
+        assert!(x < self.width);
+        assert!(y < self.height);
+        let idx: usize = ((y * self.width + x) * 3).try_into().unwrap();
+        ColorRGB{ r: self.data[idx], g: self.data[idx + 1], b: self.data[idx + 2] }
     }
 }

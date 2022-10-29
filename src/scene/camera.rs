@@ -62,10 +62,7 @@ impl Camera {
         }
     }
 
-    pub fn ray_at(&self, j: u32, k: u32) -> Ray {
-        let jf = j as f32;
-        let kf = k as f32;
-
+    pub fn ray_at(&self, jf: f32, kf: f32) -> Ray {
         let v = (self.top_left -
             self.sj * (jf / (self.hres - 1.0_f32)) * self.xv -
             self.sk * (kf / (self.vres - 1.0_f32)) * self.yv) -
