@@ -1,12 +1,14 @@
 use std::path::Path;
 use std::fs::File;
 use std::io::BufWriter;
-use std::convert::TryInto;
 use std::ops::{Add, Mul, Sub, Div, AddAssign};
+use std::time::Instant;
 
 use serde::{Serialize, Deserialize};
 
 use png;
+
+use rayon::prelude::*;
 
 fn clamp(val: f32, lo: f32, hi: f32) -> f32 {
     if val < lo {
@@ -48,6 +50,12 @@ impl ColorRGB {
         ColorRGB{ r: clamp(self.r, lo, hi),
                   g: clamp(self.g, lo, hi),
                   b: clamp(self.b, lo, hi) }
+    }
+
+    pub fn to_irgb(&self) -> [u8; 3] {
+        [(self.r * 255.0).round() as u8,
+         (self.g * 255.0).round() as u8,
+         (self.b * 255.0).round() as u8,]
     }
 }
 
@@ -120,18 +128,18 @@ impl Div<f32> for ColorRGB {
 }
 
 pub struct Framebuffer {
-    pub width: u32,
-    pub height: u32,
-    data: Vec<f32>
+    pub width: usize,
+    pub height: usize,
+    pub data: Vec<ColorRGB>
 }
 
 impl Framebuffer {
-    pub fn new(width: u32, height: u32) -> Framebuffer {
-        assert!(width > 0);
-        assert!(height > 0);
+    pub fn new(width: usize, height: usize) -> Framebuffer {
+        assert!(width > 0 && width < u32::MAX as usize);
+        assert!(height > 0 && height < u32::MAX as usize);
 
         let mut data = Vec::new();
-        data.resize((width * height * 3).try_into().unwrap(), 0.0);
+        data.resize(width * height, ColorRGB{r: 0.0, g: 0.0, b: 0.0});
 
         Framebuffer {
             width,
@@ -141,33 +149,32 @@ impl Framebuffer {
     }
 
     pub fn save_image(&self, path: &Path) {
+        let start = Instant::now();
         let file = File::create(path).unwrap();
         let bufwriter = &mut BufWriter::new(file);
 
-        let mut encoder = png::Encoder::new(bufwriter, self.width, self.height);
+        let mut encoder = png::Encoder::new(bufwriter, self.width as u32, self.height as u32);
         encoder.set_color(png::ColorType::Rgb);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
 
-        let srgb: Vec<u8> = self.data.iter().map(|f| (f * 255.0).round() as u8).collect();
-
+        let srgb: Vec<u8> = self.data.par_iter().flat_map(|c| c.to_irgb()).collect();
         writer.write_image_data(&srgb).unwrap();
-        println!("wrote {}", path.display());
+        let stop = Instant::now();
+        println!("wrote {} in {:?}", path.display(), stop - start);
     }
 
-    pub fn set_color(&mut self, x: u32, y: u32, color: &ColorRGB) {
-        assert!(x < self.width);
-        assert!(y < self.height);
-        let idx: usize = ((y * self.width + x) * 3).try_into().unwrap();
-        self.data[idx] = color.r;
-        self.data[idx + 1] = color.g;
-        self.data[idx + 2] = color.b;
+    pub fn set_color(&mut self, x: usize, y: usize, color: &ColorRGB) {
+        assert!(x < self.width, "{} {}", x, self.width);
+        assert!(y < self.height, "{} {}", y, self.height);
+        let idx: usize = (y * self.width) + x;
+        self.data[idx] = *color;
     }
 
-    pub fn get_color(&self, x: u32, y: u32) -> ColorRGB {
-        assert!(x < self.width);
-        assert!(y < self.height);
-        let idx: usize = ((y * self.width + x) * 3).try_into().unwrap();
-        ColorRGB{ r: self.data[idx], g: self.data[idx + 1], b: self.data[idx + 2] }
+    pub fn get_color(&self, x: usize, y: usize) -> ColorRGB {
+        assert!(x < self.width, "{} {}", x, self.width);
+        assert!(y < self.height, "{} {}", y, self.height);
+        let idx: usize = (y * self.width) + x;
+         self.data[idx]
     }
 }

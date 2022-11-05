@@ -5,6 +5,9 @@ use crate::bvh::BVH;
 
 use std::time::{Instant, Duration};
 
+use rayon::prelude::*;
+use rayon::current_num_threads;
+
 /// A 2d view plane coordinate
 #[derive(Debug, Copy, Clone)]
 struct XYCoord {
@@ -16,17 +19,17 @@ struct XYCoord {
 /// 0, 1, or 2 levels of adaptive supersampling
 #[derive(Debug)]
 struct Pixel {
-    j: u32,
-    k: u32,
+    j: usize,
+    k: usize,
     stash: [[Option<ColorRGB>; 5]; 5]
 }
 
 impl Pixel {
-    fn new(j: u32, k: u32) -> Self {
+    fn new(j: usize, k: usize) -> Self {
         Pixel { j, k, stash: [[None; 5]; 5]}
     }
 
-    fn sample(&mut self, tracer: &mut RayTracer, framebuf: &Framebuffer, max_depth: u8) -> ColorRGB {
+    fn sample(&mut self, tracer: &mut TraceContext, framebuf: &Framebuffer, max_depth: u8) -> ColorRGB {
         self.stash[4][0] = Some(framebuf.get_color(self.j, self.k));
         self.stash[4][4] = Some(framebuf.get_color(self.j + 1, self.k));
         self.stash[0][4] = Some(framebuf.get_color(self.j + 1, self.k - 1));
@@ -40,7 +43,7 @@ impl Pixel {
         }
     }
 
-    fn subdivide(&mut self, coord: XYCoord, bottom_left: (usize, usize), depth: usize, tracer: &mut RayTracer, min_depth: usize) -> ColorRGB {
+    fn subdivide(&mut self, coord: XYCoord, bottom_left: (usize, usize), depth: usize, tracer: &mut TraceContext, min_depth: usize) -> ColorRGB {
         let off = depth;
         let adjust = depth as f32 / 4.0;
 
@@ -107,11 +110,85 @@ struct RayTracer {
     scene: Scene,
     camera: Camera,
     bvh: BVH<Object>,
+}
+
+#[derive(Copy,Clone)]
+struct TraceResult {
     ray_count: u32,
     hit_count: u32,
     trace_sum: Duration,
     trace_max: Duration,
+}
 
+impl TraceResult {
+    fn new() -> Self {
+        TraceResult {
+            ray_count: 0,
+            hit_count: 0,
+            trace_sum: Duration::from_secs(0),
+            trace_max: Duration::from_secs(0),
+        }
+    }
+
+    fn combine(&self, rhs: &Self) -> Self {
+        let mut trace_max = self.trace_max;
+        if trace_max < rhs.trace_max {
+            trace_max = rhs.trace_max
+        }
+
+        TraceResult {
+            ray_count: self.ray_count + rhs.ray_count,
+            hit_count: self.hit_count + rhs.hit_count,
+            trace_sum: self.trace_sum + rhs.trace_sum,
+            trace_max: trace_max,
+        }
+    }
+
+    fn print_stats(&self) {
+        let mut hit_percent = 0.0;
+        let mut avg_trace = Duration::from_secs(0);
+        if self.ray_count > 0 {
+            hit_percent = (self.hit_count as f32 / self.ray_count as f32) * 100.0_f32;
+            avg_trace = self.trace_sum / self.ray_count;
+        }
+        println!("ray count: {}, hit count: {}, hit %: {:.2}, sum: {:?}, avg: {:?}, max: {:?}",
+                 self.ray_count, self.hit_count, hit_percent, self.trace_sum, avg_trace, self.trace_max);
+    }
+}
+
+/// Trace context which can track per thread execution metrics
+#[derive(Copy, Clone)]
+struct TraceContext<'tracer> {
+    tracer: &'tracer RayTracer,
+    result: TraceResult
+}
+
+impl<'tracer> TraceContext<'tracer> {
+    fn new(tracer: &'tracer RayTracer) -> Self {
+       TraceContext{tracer, result: TraceResult::new()}
+    }
+
+    fn sample_point(&mut self, j: usize, k: usize) -> ColorRGB {
+        let ray = self.tracer.camera.ray_at(j as f32, k as f32);
+        self.trace_ray(&ray)
+    }
+
+    fn sample_coord(&mut self, coord: XYCoord) -> ColorRGB {
+        let ray = self.tracer.camera.ray_at(coord.x, coord.y);
+        self.trace_ray(&ray)
+    }
+
+    fn trace_ray(&mut self, ray: &Ray) -> ColorRGB {
+        self.result.ray_count += 1;
+        let start = Instant::now();
+        let (color, hit) = self.tracer.trace_ray(ray);
+        let stop = Instant::now();
+        let delta = stop - start;
+        self.result.trace_sum += delta;
+        if delta > self.result.trace_max {self.result.trace_max = delta; }
+        if hit { self.result.hit_count += 1 }
+        color
+    }
 }
 
 impl RayTracer {
@@ -121,60 +198,29 @@ impl RayTracer {
         println!("bbox: {:?}", bvh.bbox);
         RayTracer{scene,
                   camera,
-                  bvh,
-                  ray_count: 0,
-                  hit_count: 0,
-                  trace_sum: Duration::from_secs(0),
-                  trace_max: Duration::from_secs(0)}
+                  bvh}
     }
 
-    fn sample_point(&mut self, j: u32, k: u32) -> ColorRGB {
-        let ray = self.camera.ray_at(j as f32, k as f32);
-        self.trace_ray(&ray)
-    }
+    fn trace_ray(&self, ray: &Ray) -> (ColorRGB, bool) {
+        let surfel = self.bvh.intersect(ray);
 
-    fn sample_coord(&mut self, coord: XYCoord) -> ColorRGB {
-        let ray = self.camera.ray_at(coord.x, coord.y);
-        self.trace_ray(&ray)
-    }
-
-    fn trace_ray(&mut self, ray: &Ray) -> ColorRGB {
-        self.ray_count += 1;
-        let start = Instant::now();
-        let surfel = self.bvh.intersect(&ray);
-
-        let color = match surfel {
+        match surfel {
             Some(surf) => {
-                self.hit_count += 1;
                 let mut color = ColorRGB::black();
                 let material = self.scene.material_for_surfel(&surf);
                 let ambient = self.scene.ambient() * material.ka * material.ambient;
 
                 for light in self.scene.lights().iter() {
-                    color = color + phong_shade(light, &self.camera.eye, &surf, material);
+                    color += phong_shade(light, &self.camera.eye, &surf, material);
                 }
 
-                color = color + ambient;
+                color += ambient;
                 color = color.clamp(0.0_f32, 1.0_f32);
-                color
+                (color, true)
             }
-            None => { self.scene.bgcolor() }
-        };
-
-        let stop = Instant::now();
-        let delta = stop - start;
-        self.trace_sum += delta;
-        if delta > self.trace_max {self.trace_max = delta; }
-        color
+            None => { (self.scene.bgcolor(), false) }
+        }
     }
-
-    fn print_stats(&self) {
-        let hit_percent = (self.hit_count as f32 / self.ray_count as f32) * 100.0_f32;
-        let avg_trace = self.trace_sum / self.ray_count;
-        println!("ray count: {}, hit count: {}, hit %: {:.2}, sum: {:?}, avg: {:?}, max: {:?}",
-                 self.ray_count, self.hit_count, hit_percent, self.trace_sum, avg_trace, self.trace_max);
-    }
-
 }
 
 fn phong_shade<T: Light>(light: &T, eye: &Vec3, surfel: &Surfel, material: &Material) -> ColorRGB {
@@ -194,37 +240,52 @@ fn phong_shade<T: Light>(light: &T, eye: &Vec3, surfel: &Surfel, material: &Mate
 }
 
 pub fn render_scene(scene: Scene, anti_aliasing_depth: u8) -> Framebuffer {
-
-    println!("bg color {:?}", scene.bgcolor());
+    println!("bg color {:?} num threads {}", scene.bgcolor(), current_num_threads());
     let setup_start = Instant::now();
-    let mut fb = Framebuffer::new(scene.width(), scene.height());
-    let mut tracer = RayTracer::new(scene);
+    let mut fb = Framebuffer::new(scene.width() as usize, scene.height() as usize);
+    let tracer = RayTracer::new(scene);
     let setup_end = Instant::now();
     println!("setup time: {:?}", setup_end - setup_start);
 
     let begin = Instant::now();
+    let result = fb.data.par_chunks_mut(fb.height as usize)
+        .enumerate()
+        .map(|(k, row)| {
+            let mut ctxt = TraceContext::new(&tracer);
+            for (j, c) in row.iter_mut().enumerate() {
+                let color = ctxt.sample_point(j, k);
+                *c = color;
+            }
+            ctxt.result
+        })
+        .reduce(|| TraceResult::new(),
+                |a, b| a.combine(&b));
 
-    // first render pass
-    for j in 0..fb.width {
-        for k in 0..fb.height {
-            let color = tracer.sample_point(j, k);
-            fb.set_color(j, k, &color);
-        }
-    }
     let trace_end = Instant::now();
-    println!("total tracing time: {:?}", trace_end - begin);
 
     // anti-aliasing
-    for j in 0..fb.width - 1 {
-        for k in 1..fb.height {
-            let mut pixel = Pixel::new(j, k);
-            let color = pixel.sample(&mut tracer, &fb, anti_aliasing_depth);
-            fb.set_color(j, k, &color);
-        }
-    }
+    let mut fb2 = Framebuffer::new(fb.width, fb.height);
+    let result2 = fb2.data.par_chunks_mut(fb.height as usize)
+        .skip(1)
+        .enumerate()
+        .map(|(k, row)| {
+            let mut ctxt = TraceContext::new(&tracer);
+            for (j, c) in row.iter_mut().enumerate() {
+                if j == (fb.width - 1) as usize { break; }
+                let mut pixel = Pixel::new(j, k + 1);
+                let color = pixel.sample(&mut ctxt, &fb, anti_aliasing_depth);
+                *c = color;
+            }
+            ctxt.result
+    })
+    .reduce(|| TraceResult::new(),
+            |a, b| a.combine(&b));
 
     let render_end = Instant::now();
-    tracer.print_stats();
+
+    result.print_stats();
+    result2.print_stats();
+    println!("total tracing time: {:?}", trace_end - begin);
     println!("total render time: {:?}", render_end - begin);
-    fb
+    fb2
 }

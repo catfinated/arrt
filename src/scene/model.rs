@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use serde;
 use serde::{Serialize, Deserialize};
@@ -26,7 +26,7 @@ pub struct Transform {
 }
 
 pub struct Model {
-    mesh: Rc<Mesh>,
+    mesh: Arc<Mesh>,
     material: MaterialID,
     vertices: Vec<Vec3>,
     normals: Vec<Vec3>,
@@ -58,7 +58,7 @@ impl Transform {
 }
 
 impl Model {
-    pub fn new(mesh: Rc<Mesh>, material: MaterialID, transform: &Transform) -> Model {
+    pub fn new(mesh: Arc<Mesh>, material: MaterialID, transform: &Transform) -> Model {
         let m = transform.mat4();
 
         let mut vertices = Vec::with_capacity(mesh.vertices.len());

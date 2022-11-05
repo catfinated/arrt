@@ -8,8 +8,8 @@ pub mod model;
 
 use std::fs;
 use std::collections::HashMap;
-use std::rc::Rc;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use serde;
 use serde_yaml;
@@ -80,9 +80,9 @@ impl Scene {
                 }
                 ObjectConfig::Model(m) => {
                     let material_id = self.materials_map[&m.material];
-                    let mesh: &Rc<Mesh> = meshes.entry(m.mesh.clone())
-                        .or_insert_with(|| Rc::new(Mesh::new(&m.mesh, mesh_dir)));
-                    objs.push(Object::Model(Model::new(Rc::clone(mesh),
+                    let mesh: &Arc<Mesh> = meshes.entry(m.mesh.clone())
+                        .or_insert_with(|| Arc::new(Mesh::new(&m.mesh, mesh_dir)));
+                    objs.push(Object::Model(Model::new(Arc::clone(mesh),
                                                        material_id,
                                                        &m.transform)));
                 }

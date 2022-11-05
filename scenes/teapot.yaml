@@ -1,10 +1,9 @@
 bgcolor:
-  r: 0.44
-  g: 0.5
-  b: 0.56
-width: 512
-height: 512
-mesh_dir: models
+  r: 0
+  g: 0
+  b: 0
+width: 1024
+height: 1024
 ambient:
   r: 1.0
   g: 1.0
@@ -13,7 +12,7 @@ camera:
   eye:
     - 0.0
     - 0.0
-    - 3.0
+    - 10.0
   up:
     - 0.0
     - 1.0
@@ -116,33 +115,27 @@ materials:
       b: 0.508
     shininess: 6
 objects:
-  - !Sphere
-      center:
-        - 0.0
-        - 1.0
-        - 0.0
-      radius: 0.4
-      material: blue
-  - !Sphere
-      center:
-        - 0.0
-        - -1.0
-        - 0.0
-      radius: 0.4
-      material: red
   - !Model
-      mesh: bound-bunny_1k.smf
-      material: ruby
+      mesh: models/teapot.smf
+      material: emerald
       transform:
-       scale:
-          - 0.8
-          - 0.8
-          - 0.8
+        translate:
+          - 0.0
+          - -1.0
+          - 0.0
+        rotate:
+          - 0.0
+          - 0.0
+          - 0.0
+        scale:
+          - 1.0
+          - 1.0
+          - 1.0
 lights:
   - position:
-      - -1.0
+      - -5.0
       - 2.0
-      - 2.0
+      - 5.0
     ambient:
       r: 1.0
       g: 1.0
