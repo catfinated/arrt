@@ -12,12 +12,14 @@ This ray tracer is exteremly basic right now but the following features are incl
 * Sphere and simple mesh rendering
 * Bounding volume hiearchy based on axis aligned bounding boxes
 * Adaptive super sampling (1 - 2x)
+* Parallelized tracing and rendering with rayon
+* Model instancing
 
 Here are some examples of what it can currently prodcue:
 
 ![Example 1](docs/scene.png)
-![Example 2](docs/scene2.png)
-![Example 3](docs/cow.png)
+![Example 2](docs/bunnies.png)
+![Example 3](docs/cows.png)
 
 ## TODO
 
