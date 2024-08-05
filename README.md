@@ -11,6 +11,7 @@ This ray tracer is exteremly basic right now but the following features are incl
 
 * Sphere and simple mesh rendering
 * Bounding volume hiearchy based on axis aligned bounding boxes
+* Phong shading with point light sources
 * Adaptive super sampling (1 - 2x)
 * Parallelized tracing and rendering with rayon
 * Model instancing
