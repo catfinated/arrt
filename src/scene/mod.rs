@@ -25,11 +25,9 @@ use objects::ObjectConfig;
 pub use camera::Camera;
 pub use lights::Light;
 pub use sphere::Sphere;
-pub use model::Model;
+pub use model::{Model, ModelInstance, Transform};
 pub use objects::Object;
 pub use material::{Material, MaterialID, Surfel};
-
-use mesh::Mesh;
 
 #[derive(Serialize, Deserialize)]
 struct SceneConfig {
@@ -56,7 +54,7 @@ pub struct Scene {
 
 impl Scene {
     pub fn new(fpath: &PathBuf) -> Scene {
-        let yaml = fs::read_to_string(&fpath).unwrap();
+        let yaml = fs::read_to_string(fpath).unwrap();
         let config: SceneConfig = serde_yaml::from_str(&yaml).unwrap();
 
         let mut materials_map = HashMap::new();
@@ -71,7 +69,7 @@ impl Scene {
     {
         let mut objs = Vec::new();
         let mesh_dir = &self.config.mesh_dir;
-        let mut meshes = HashMap::new();
+        let mut models = HashMap::new();
 
         for obj in &self.config.objects {
             match obj {
@@ -80,9 +78,9 @@ impl Scene {
                 }
                 ObjectConfig::Model(m) => {
                     let material_id = self.materials_map[&m.material];
-                    let mesh: &Arc<Mesh> = meshes.entry(m.mesh.clone())
-                        .or_insert_with(|| Arc::new(Mesh::new(&m.mesh, mesh_dir)));
-                    objs.push(Object::Model(Model::new(Arc::clone(mesh),
+                    let model: &Arc<Model> = models.entry(m.mesh.clone())
+                    .or_insert_with(|| Arc::new(Model::new(&m.mesh, mesh_dir, material_id)));
+                    objs.push(Object::ModelInstance(ModelInstance::new(model.clone(),
                                                        material_id,
                                                        &m.transform)));
                 }

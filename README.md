@@ -21,7 +21,5 @@ Here are some examples of what it can currently prodcue:
 
 ## TODO
 
-* instancing
 * reflections and refractions
 * bezeir pathes/curves
-* threading

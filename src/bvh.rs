@@ -29,9 +29,9 @@ impl<T: BvhNode> BVH<T> {
         objects.sort_unstable_by(|a, b| centroid_cmp(a, b, axis));
 
         if objects.len() <= 1 {
-            println!("added BVH leaf with {} objects", objects.len());
             objects.shrink_to_fit();
             let bbox = compute_bbox(&objects[..]);
+            println!("added BVH leaf with {} objects. bbox: {:?}", objects.len(), bbox);
             BVH{ left: None, right: None, objects, bbox }
         }
         else {
@@ -50,7 +50,7 @@ impl<T: BvhNode> BVH<T> {
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<Surfel> {
-        let range = Range{ min: 1e-6, max: std::f32::MAX };
+        let range = Range{ min: 1e-6, max: f32::MAX };
         self.intersect_with_range(ray, range)
     }
 

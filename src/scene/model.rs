@@ -9,14 +9,6 @@ use crate::aabb::AABB;
 use super::mesh::Mesh;
 use super::material::{Surfel, MaterialID};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ModelConfig {
-    pub mesh: String,
-    pub material: String,
-    #[serde(default)]
-    pub transform: Transform
-}
-
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Transform {
@@ -25,12 +17,28 @@ pub struct Transform {
     pub scale: Vec3,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ModelConfig {
+    pub mesh: String,
+    pub material: String,
+    #[serde(default)]
+    pub transform: Transform
+}
+
 pub struct Model {
-    mesh: Arc<Mesh>,
-    material: MaterialID,
+    mesh: Mesh,
+    material_id: MaterialID,
     vertices: Vec<Vec3>,
     normals: Vec<Vec3>,
     pub bbox: AABB
+}
+
+pub struct ModelInstance {
+    model: Arc<Model>,
+    material_id: MaterialID,
+    pub bbox: AABB,
+    transform: Mat4,
+    inverse: Mat4
 }
 
 impl Default for Transform {
@@ -46,6 +54,7 @@ impl Transform {
         Transform{ translate, rotate, scale }
     }
 
+    /// Create combined transformation matrix
     pub fn mat4(&self) -> Mat4 {
         let t = Mat4::translate(&self.translate);
         let s = Mat4::scale(&self.scale);
@@ -55,12 +64,22 @@ impl Transform {
         let r = &(&rx * &ry) * &rz;
         &(&t * &r) * &s
     }
+
+    /// Create inverse transformation matrix
+    pub fn inverse(&self) -> Mat4 {
+        let t = Mat4::itranslate(&self.translate);
+        let s = Mat4::iscale(&self.scale);
+        let rx = Mat4::irotate_x(Degree(self.rotate.x()));
+        let ry = Mat4::irotate_y(Degree(self.rotate.y()));
+        let rz = Mat4::irotate_z(Degree(self.rotate.z()));
+        let r = &(&rz * &ry) * &rx;
+        &(&s * &r) * &t
+    }
 }
 
 impl Model {
-    pub fn new(mesh: Arc<Mesh>, material: MaterialID, transform: &Transform) -> Model {
-        let m = transform.mat4();
-
+    pub fn new(fpath: &String, dpath: &String, material_id: MaterialID) -> Model { 
+        let mesh = Mesh::new(fpath, dpath);
         let mut vertices = Vec::with_capacity(mesh.vertices.len());
         let mut normals = Vec::with_capacity(mesh.vertices.len());
         let mut counts = Vec::with_capacity(mesh.vertices.len());
@@ -70,9 +89,8 @@ impl Model {
         let mut box_min = Vec3::fill(f32::MAX);
         let mut box_max = Vec3::fill(f32::MIN);
 
-        // transform vertices and compute bbox vertexes
         for vert in &mesh.vertices {
-            let v = (&m * Vec4::from_vec3(*vert, 1.0_f32)).to_vec3();
+           let v = *vert;
             vertices.push(v);
 
             box_min.set_x(v.x().min(box_min.x()));
@@ -110,8 +128,8 @@ impl Model {
         }
 
         let bbox = AABB::new(box_min, box_max);
-        //normals = mesh.normals.clone();
-        Model{ mesh, material, vertices, normals, bbox }
+        println!("model bbox: {:?}", bbox);
+        Model{ mesh, material_id, vertices, normals, bbox }
     }
 
     pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
@@ -122,10 +140,40 @@ impl Model {
         for tri in &self.mesh.triangles {
             if let Some(surf) = tri.intersect(ray, t_range, &self.vertices, &self.normals) {
                 t_range.max = surf.t;
-                surfel = Some(Surfel{material_id: self.material, ..surf});
+                surfel = Some(Surfel{material_id: self.material_id, ..surf});
             }
         }
 
+        surfel
+    }
+
+    pub fn centroid(&self) -> Vec3 {
+        self.bbox.center()
+    }
+}
+
+impl ModelInstance {
+    pub fn new(model: Arc<Model>, material_id: MaterialID, transformations: &Transform) -> Self {
+        let transform = transformations.mat4();
+        let inverse = transformations.inverse();
+        let bbox = model.bbox.transform(&transform);
+        println!("instance bbox: {:?}", bbox);
+        ModelInstance{model, material_id, bbox, transform, inverse}
+    }
+
+    pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
+        let o = (&self.inverse * Vec4::from_vec3(ray.origin, 1.0_f32)).to_vec3();
+        let d = (&self.inverse * Vec4::from_vec3(ray.direction, 0.0_f32)).to_vec3();
+        let r = Ray{origin: o, direction: normalize(d)};
+        let mut surfel = None;
+
+        if let Some(surf) = self.model.intersect(&r, range) {
+            let hit_point = (&self.transform * Vec4::from_vec3(surf.hit_point, 1.0_f32)).to_vec3();
+            let t = surf.t;
+            let normal = normalize((&self.inverse.transpose() * Vec4::from_vec3(surf.normal, 0.0_f32)).to_vec3());
+            let material_id = self.material_id;
+            surfel = Some(Surfel{t, hit_point, normal, material_id})
+        }
         surfel
     }
 

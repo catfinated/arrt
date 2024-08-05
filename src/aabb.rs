@@ -1,4 +1,5 @@
-use crate::math::{Ray, Range, Vec3};
+use crate::math::Vec4;
+use crate::math::{Ray, Range, Vec3, Mat4};
 
 use std::mem;
 use std::f32;
@@ -41,6 +42,38 @@ impl AABB {
                             self.max.z().max(other.max.z()));
 
         AABB{ min, max }
+    }
+
+    fn vertices(&self) -> [Vec3; 8] {
+        [
+            Vec3::new(self.min.x(), self.min.y(), self.min.z()),
+            Vec3::new(self.max.x(), self.min.y(), self.min.z()),
+            Vec3::new(self.min.x(), self.max.y(), self.min.z()),
+            Vec3::new(self.min.x(), self.min.y(), self.max.z()),
+            Vec3::new(self.max.x(), self.min.y(), self.max.z()),
+            Vec3::new(self.max.x(), self.max.y(), self.min.z()),
+            Vec3::new(self.min.x(), self.max.y(), self.max.z()),
+            Vec3::new(self.max.x(), self.max.y(), self.max.z()),
+        ]
+    }
+
+    /// Transform bounding box 
+    pub fn transform(&self, m: &Mat4) -> Self {
+        let mut mins = [f32::MAX, f32::MAX, f32::MAX];
+        let mut maxs = [f32::MIN, f32::MIN, f32::MIN];
+
+        // Convert to cube, transform cube, re-align to axes
+        for vertex in self.vertices().iter() {
+            let v = (m * Vec4::from_vec3(*vertex, 1.0_f32)).to_vec3();
+            mins[0] = mins[0].min(v.x());
+            mins[1] = mins[1].min(v.y());
+            mins[2] = mins[2].min(v.z());
+            maxs[0] = maxs[0].max(v.x());
+            maxs[1] = maxs[1].max(v.y());
+            maxs[2] = maxs[2].max(v.z());            
+        }
+        
+        AABB{ min: Vec3::new(mins[0], mins[1], mins[2]), max: Vec3::new(maxs[0], maxs[1], maxs[2]) }
     }
 
     pub fn intersect(&self, ray: &Ray, range: Range) -> Option<f32> {

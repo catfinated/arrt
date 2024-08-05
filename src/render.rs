@@ -140,7 +140,7 @@ impl TraceResult {
             ray_count: self.ray_count + rhs.ray_count,
             hit_count: self.hit_count + rhs.hit_count,
             trace_sum: self.trace_sum + rhs.trace_sum,
-            trace_max: trace_max,
+            trace_max,
         }
     }
 
@@ -248,7 +248,7 @@ pub fn render_scene(scene: Scene, anti_aliasing_depth: u8) -> Framebuffer {
     println!("setup time: {:?}", setup_end - setup_start);
 
     let begin = Instant::now();
-    let result = fb.data.par_chunks_mut(fb.height as usize)
+    let result = fb.data.par_chunks_mut(fb.height)
         .enumerate()
         .map(|(k, row)| {
             let mut ctxt = TraceContext::new(&tracer);
@@ -258,27 +258,27 @@ pub fn render_scene(scene: Scene, anti_aliasing_depth: u8) -> Framebuffer {
             }
             ctxt.result
         })
-        .reduce(|| TraceResult::new(),
+        .reduce(TraceResult::new,
                 |a, b| a.combine(&b));
 
     let trace_end = Instant::now();
 
     // anti-aliasing
     let mut fb2 = Framebuffer::new(fb.width, fb.height);
-    let result2 = fb2.data.par_chunks_mut(fb.height as usize)
+    let result2 = fb2.data.par_chunks_mut(fb.height)
         .skip(1)
         .enumerate()
         .map(|(k, row)| {
             let mut ctxt = TraceContext::new(&tracer);
             for (j, c) in row.iter_mut().enumerate() {
-                if j == (fb.width - 1) as usize { break; }
+                if j == fb.width - 1 { break; }
                 let mut pixel = Pixel::new(j, k + 1);
                 let color = pixel.sample(&mut ctxt, &fb, anti_aliasing_depth);
                 *c = color;
             }
             ctxt.result
     })
-    .reduce(|| TraceResult::new(),
+    .reduce(TraceResult::new,
             |a, b| a.combine(&b));
 
     let render_end = Instant::now();

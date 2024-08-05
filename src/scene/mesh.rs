@@ -157,6 +157,7 @@ impl Mesh {
     pub fn new(fpath: &String, dpath: &String) -> Mesh {
         let mut mesh = Mesh{ vertices: Vec::new(), triangles: Vec::new(), normals: Vec::new() };
         let path = Path::new(dpath).join(fpath);
+        println!("loading model mesh from: {:#?}", path);
 
         let file = match File::open(&path) {
             Err(why) => panic!("failed to open {}: {}", path.display(), why),
@@ -165,7 +166,7 @@ impl Mesh {
 
         let lines = io::BufReader::new(file).lines();
 
-        for line in lines.flatten() {
+        for line in lines.map_while(Result::ok) {
                 if line.is_empty() || line.starts_with('#') {
                     continue;
                 }

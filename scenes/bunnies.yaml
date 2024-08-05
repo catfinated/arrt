@@ -1,0 +1,383 @@
+bgcolor:
+  r: 0.44
+  g: 0.5
+  b: 0.56
+width: 512
+height: 512
+mesh_dir: models
+ambient:
+  r: 1.0
+  g: 1.0
+  b: 1.0
+camera:
+  eye:
+    - 0.0
+    - 0.0
+    - 3.0
+  up:
+    - 0.0
+    - 1.0
+    - 0.0
+  look_at:
+    - 0.0
+    - 0.0
+    - -1.0
+  dist: 1.0
+  fov: 56.0
+materials:
+  - name: red
+    ambient:
+      r: 0.9
+      g: 0.1
+      b: 0.1
+    diffuse:
+      r: 0.9
+      g: 0.1
+      b: 0.1
+    specular:
+      r: 0.9
+      g: 0.5
+      b: 0.5
+    ka: 0.2
+    kd: 0.5
+    ks: 0.7
+    shininess: 30
+  - name: blue
+    ambient:
+      r: 0.1
+      g: 0.1
+      b: 0.9
+    diffuse:
+      r: 0.1
+      g: 0.1
+      b: 0.9
+    specular:
+      r: 0.5
+      g: 0.5
+      b: 0.9
+    ka: 0.5
+    kd: 0.8
+    ks: 1
+    shininess: 6
+  - name: ruby
+    ambient:
+      r: 0.175
+      g: 0.012
+      b: 0.012
+    diffuse:
+      r: 0.614
+      g: 0.041
+      b: 0.041
+    specular:
+      r: 0.3
+      g: 0.3
+      b: 0.3
+    shininess: 10
+  - name: emerald
+    ambient:
+      r: 0.023
+      g: 0.175
+      b: 0.022
+    diffuse:
+      r: 0.076
+      g: 0.614
+      b: 0.076
+    specular:
+      r: 0.633
+      g: 0.729
+      b: 0.633
+    shininess: 2
+  - name: gold
+    ambient:
+      r: 0.247
+      g: 0.200
+      b: 0.075
+    diffuse:
+      r: 0.752
+      g: 0.606
+      b: 0.226
+    specular:
+      r: 0.628
+      g: 0.556
+      b: 0.366
+    shininess: 32
+  - name: silver
+    ambient:
+      r: 0.192
+      g: 0.192
+      b: 0.192
+    diffuse:
+      r: 0.508
+      g: 0.507
+      b: 0.507
+    specular:
+      r: 0.508
+      g: 0.508
+      b: 0.508
+    shininess: 6
+objects:
+  # first row
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: ruby
+      transform:
+       translate:
+          - -1.25
+          - 1.25
+          - 0.0  
+       rotate:
+          - 0.0
+          - -45.0
+          - 0.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: silver
+      transform:
+       translate:
+          - -0.5
+          - 1.25
+          - 0.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: emerald
+      transform:
+       translate:
+          - 1.25
+          - 1.25
+          - 0.0    
+       rotate: 
+          - 0.0
+          - 45.0
+          - 0.0 
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5  
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: emerald
+      transform:
+       translate:
+          - 0.5
+          - 1.25
+          - 0.0    
+       rotate: 
+          - 0.0
+          - .0
+          - 0.0 
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5 
+  # second row
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: ruby
+      transform:
+       translate:
+          - -1.25
+          - 0.5
+          - 0.0  
+       rotate:
+          - 0.0
+          - 0.0
+          - 30.0
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5                
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: silver
+      transform:
+       translate:
+          - -0.5
+          - 0.5
+          - 0.0  
+       rotate:
+          - 0.0
+          - -45.0
+          - 0.0
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: gold
+      transform:
+       translate:
+          - 0.5
+          - 0.5
+          - 0.0    
+       rotate: 
+          - 0.0
+          - 45.0
+          - 0.0 
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5    
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: gold
+      transform:
+       translate:
+          - 1.25
+          - 0.5
+          - 0.0    
+       rotate:
+          - 0.0
+          - 0.0
+          - -30.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5 
+  # third row
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: emerald
+      transform:
+       translate:
+          - -1.25
+          - -0.5
+          - 0.0     
+       rotate:
+          - 30.0
+          - 0.0
+          - 0.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5 
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: emerald
+      transform:
+       translate:
+          - -0.5
+          - -0.5
+          - 0.0 
+       rotate:
+          - 0.0
+          - 45.0
+          - 0.0   
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5 
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: ruby
+      transform:
+       translate:
+          - 0.5
+          - -0.5
+          - 0.0  
+       rotate:
+          - 0.0
+          - -45.0
+          - 0.0
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5  
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: silver
+      transform:
+       translate:
+          - 1.25
+          - -0.5
+          - 0.0  
+       rotate:
+          - -30.0
+          - 0.0
+          - 0.0
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5          
+  # fourth row
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: gold
+      transform:
+       translate:
+          - -1.25
+          - -1.25
+          - 0.0
+       rotate:
+          - 0.0
+          - 45.0
+          - 0.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5    
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: gold
+      transform:
+       translate:
+          - -0.5
+          - -1.25
+          - 0.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5  
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: ruby
+      transform:
+       translate:
+          - 0.5
+          - -1.25
+          - 0.0  
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5    
+  - !Model
+      mesh: bound-bunny_1k.smf
+      material: silver
+      transform:
+       translate:
+          - 1.25
+          - -1.25
+          - 0.0  
+       rotate:
+          - 0.0
+          - -45.0
+          - 0.0
+       scale:
+          - 0.5
+          - 0.5
+          - 0.5      
+lights:
+  - position:
+      - -1.0
+      - 2.0
+      - 2.0
+    ambient:
+      r: 1.0
+      g: 1.0
+      b: 1.0
+    diffuse:
+      r: 1.0
+      g: 1.0
+      b: 1.0
+    specular:
+      r: 1.0
+      g: 1.0
+      b: 1.0

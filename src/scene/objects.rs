@@ -5,7 +5,7 @@ use crate::bvh::BvhNode;
 use crate::math::*;
 
 use super::material::Surfel;
-use super::model::{Model, ModelConfig};
+use super::model::{ModelConfig, ModelInstance};
 use super::sphere::{Sphere, SphereConfig};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,7 +16,7 @@ pub enum ObjectConfig {
 
 pub enum Object {
     Sphere(Sphere),
-    Model(Model)
+    ModelInstance(ModelInstance)
 }
 
 impl BvhNode for Object {
@@ -25,8 +25,8 @@ impl BvhNode for Object {
             Object::Sphere(sphere) => {
                 sphere.center
             }
-            Object::Model(model) => {
-                model.centroid()
+            Object::ModelInstance(instance) => {
+                instance.centroid()
             }
         }
     }
@@ -36,8 +36,8 @@ impl BvhNode for Object {
             Object::Sphere(sphere) => {
                 sphere.bbox
             }
-            Object::Model(model) => {
-                model.bbox
+            Object::ModelInstance(instance) => {
+                instance.bbox
             }
         }
     }
@@ -46,8 +46,8 @@ impl BvhNode for Object {
             Object::Sphere(sphere) => {
                 sphere.intersect(ray, range)
             }
-            Object::Model(model) => {
-                model.intersect(ray, range)
+            Object::ModelInstance(instance) => {
+                instance.intersect(ray, range)
             }
         }
     }
