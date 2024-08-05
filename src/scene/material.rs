@@ -1,4 +1,9 @@
+use std::collections::HashMap;
+use std::fs::File;
+use std::path::PathBuf;
+
 use serde;
+use serde_yaml;
 use serde::{Serialize, Deserialize};
 
 use crate::framebuffer::ColorRGB;
@@ -20,6 +25,11 @@ pub struct Material {
 #[derive(Debug, Copy, Clone)]
 pub struct MaterialID(pub usize);
 
+pub struct MaterialMap {
+    materials: Vec<Material>,
+    name_to_id: HashMap<String, MaterialID>,
+}
+
 pub struct Surfel {
     pub t: f32,
     pub hit_point: Vec3,
@@ -40,4 +50,25 @@ impl Default for Material {
     }
 }
 
+impl MaterialMap {
+    pub fn new(fpath: &PathBuf) -> MaterialMap {
+        println!("loading materials from: {:#?}", fpath);
+        let inf = File::open(fpath).unwrap();
+        let materials: Vec<Material> =  serde_yaml::from_reader(&inf).unwrap();
+
+        let mut name_to_id = HashMap::new();
+        for (i, mat) in materials.iter().enumerate() {
+            name_to_id.insert(mat.name.clone(), MaterialID(i));
+        }
+        MaterialMap{materials, name_to_id}
+    }
+     
+    pub fn get_material_id(&self, name: &str) -> MaterialID {
+        self.name_to_id[name]
+    }
+
+    pub fn get_material(&self, id: MaterialID) -> &Material {
+        &self.materials[id.0]
+    }
+}
 

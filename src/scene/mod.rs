@@ -27,7 +27,7 @@ pub use lights::Light;
 pub use sphere::Sphere;
 pub use model::{Model, ModelInstance, Transform};
 pub use objects::Object;
-pub use material::{Material, MaterialID, Surfel};
+pub use material::{Material, MaterialID, MaterialMap, Surfel};
 
 #[derive(Serialize, Deserialize)]
 struct SceneConfig {
@@ -40,8 +40,6 @@ struct SceneConfig {
     ambient: ColorRGB,
     camera: CameraConfig,
     #[serde(default)]
-    materials: Vec<Material>,
-    #[serde(default)]
     objects: Vec<ObjectConfig>,
     #[serde(default)]
     lights: Vec<PointLight>,
@@ -49,19 +47,16 @@ struct SceneConfig {
 
 pub struct Scene {
     config: SceneConfig,
-    materials_map: HashMap<String, MaterialID>,
+    materials_map: MaterialMap,
 }
 
 impl Scene {
     pub fn new(fpath: &PathBuf) -> Scene {
+        let mut mat_path = fpath.clone();
+        mat_path.set_file_name("materials.yaml");
         let yaml = fs::read_to_string(fpath).unwrap();
         let config: SceneConfig = serde_yaml::from_str(&yaml).unwrap();
-
-        let mut materials_map = HashMap::new();
-        for (i, mat) in config.materials.iter().enumerate() {
-            materials_map.insert(mat.name.clone(), MaterialID(i));
-        }
-
+        let materials_map = MaterialMap::new(&mat_path);
         Scene{config, materials_map}
     }
 
@@ -74,10 +69,10 @@ impl Scene {
         for obj in &self.config.objects {
             match obj {
                 ObjectConfig::Sphere(s) => {
-                    objs.push(Object::Sphere(Sphere::new(s, self.materials_map[&s.material])));
+                    objs.push(Object::Sphere(Sphere::new(s, self.materials_map.get_material_id(&s.material))));
                 }
                 ObjectConfig::Model(m) => {
-                    let material_id = self.materials_map[&m.material];
+                    let material_id = self.materials_map.get_material_id(&m.material);
                     let model: &Arc<Model> = models.entry(m.mesh.clone())
                     .or_insert_with(|| Arc::new(Model::new(&m.mesh, mesh_dir, material_id)));
                     objs.push(Object::ModelInstance(ModelInstance::new(model.clone(),
@@ -115,8 +110,7 @@ impl Scene {
         self.config.bgcolor
     }
 
-    pub fn material_for_surfel(&self, surfel: &Surfel) -> &Material
-    {
-        &self.config.materials[surfel.material_id.0]
+    pub fn material_for_surfel(&self, surfel: &Surfel) -> &Material {
+        self.materials_map.get_material(surfel.material_id)
     }
 }

@@ -19,22 +19,6 @@ camera:
     - -1.0
   dist: 1.0
   fov: 56.0
-materials:
-  - name: red
-    diffuse:
-      r: 1.0
-      g: 0
-      b: 0
-  - name: green
-    diffuse:
-      r: 0
-      g: 1.0
-      b: 0
-  - name: orange
-    diffuse:
-      r: 1.0
-      g: 0.6470
-      b: 0
 objects:
   - !Sphere
       center:
