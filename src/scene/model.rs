@@ -89,6 +89,8 @@ impl Model {
         let mut box_min = Vec3::fill(f32::MAX);
         let mut box_max = Vec3::fill(f32::MIN);
 
+        // todo: vertices/normals/bbox now redundant between model and mesh.
+        // combine the two since transformations are now handled with instancing.
         for vert in &mesh.vertices {
            let v = *vert;
             vertices.push(v);
@@ -170,7 +172,13 @@ impl ModelInstance {
         if let Some(surf) = self.model.intersect(&r, range) {
             let hit_point = (&self.transform * Vec4::from_vec3(surf.hit_point, 1.0_f32)).to_vec3();
             let t = surf.t;
-            let normal = normalize((&self.inverse.transpose() * Vec4::from_vec3(surf.normal, 0.0_f32)).to_vec3());
+            // todo: original c++ impl had a note about using the t value computed from model space 
+            // intersection here being incorrect and this seems true. however, suffern text says it should
+            // be passed back unmodified
+            //println!("hit point: {:?} t {} tpoint: {:?}", hit_point, t, ray.point_at(t));
+            let it = self.inverse.transpose();
+            let v4 = &it * Vec4::from_vec3(surf.normal, 0.0_f32);
+            let normal = normalize(v4.to_vec3());
             let material_id = self.material_id;
             surfel = Some(Surfel{t, hit_point, normal, material_id})
         }

@@ -40,17 +40,18 @@ impl Sphere {
         let a = sum(square(ray.direction));
         let v = ray.origin - self.center;
         let b = 2.0_f32 * sum(ray.direction * v);
-        let c = sum(square(v)) - self.radius * self.radius;
-        let discriminant = b * b - 4.0_f32 * a * c;
+        let c = sum(square(v)) - (self.radius * self.radius);
+        let discriminant = (b * b) - (4.0_f32 * a * c);
 
         if discriminant < 0.0_f32 {
             return None;
         }
 
-        let mut t = (-b - discriminant) / 2.0_f32;
+        let f = discriminant.sqrt();
+        let mut t = (-b - f) / 2.0_f32;
 
         if t < 0.0_f32 {
-            t = (-b + discriminant) / 2.0_f32;
+            t = (-b + f) / 2.0_f32;
         }
 
         if t < 0.0_f32 {

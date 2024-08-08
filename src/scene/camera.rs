@@ -4,11 +4,11 @@ use crate::math::{cross, normalize, Degree, Ray, Vec3};
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct CameraConfig {
-    pub eye: Vec3,
-    pub up: Vec3,
-    pub look_at: Vec3,
-    pub dist: f32,
-    pub fov: Degree
+    pub eye: Vec3, // camera location O
+    pub up: Vec3, // camera view up vector Vup
+    pub look_at: Vec3, // camera view out direction Zv
+    pub dist: f32, // distance to image plane
+    pub fov: Degree // field of view
 }
 
 pub struct Camera {
@@ -37,18 +37,18 @@ impl Camera {
 
         let top_left = config.eye + config.dist * zv + (sj / 2.0_f32) * xv + (sk / 2.0_f32) * yv;
 
-        println!("{:?}", config.eye);
-        println!("{:?}", zv);
-        println!("{:?}", vup);
-        println!("{:?}", xv);
-        println!("{:?}", yv);
-        println!("{}", sj);
-        println!("{}", sk);
-        println!("{:?}", top_left);
-        println!("{}", config.fov.0);
-        println!("{}", theta.0);
-        println!("{}", h);
-        println!("{}", config.dist);
+        println!("eye: {:?}", config.eye);
+        println!("zv:  {:?}", zv);
+        println!("vup: {:?}", vup);
+        println!("xv:  {:?}", xv);
+        println!("yv:  {:?}", yv);
+        println!("sj:  {}", sj);
+        println!("sk:  {}", sk);
+        println!("top left {:?}", top_left);
+        println!("fov:   {}", config.fov.0);
+        println!("theta: {}", theta.0);
+        println!("h:     {}", h);
+        println!("dist:  {}", config.dist);
 
         Camera {
             eye: config.eye,

@@ -58,13 +58,15 @@ impl<T: BvhNode> BVH<T> {
     {
         let mut ret = None;
 
-        if let Some(t) = self.bbox.intersect(ray, range) {
-            range.min = t;
+        if let Some(_) = self.bbox.intersect(ray, range) {
+            // todo: figure out where the bug is
+            //range.min = t; <-- this causes objects scaled > 1.0 to not be visible
+            //range.max = t; <-- this causes objects scaled < 1.0 to not be visible
 
             if !self.objects.is_empty() {
                 for object in self.objects.iter() {
                     if let Some(surf) = object.intersect(ray, range) {
-                        range.max = surf.t;
+                        range.max = surf.t; // ensure intersections behind this surfel hit point are not considered
                         ret = Some(surf);
                     }
                 }

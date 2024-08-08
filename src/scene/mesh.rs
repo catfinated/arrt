@@ -128,11 +128,13 @@ impl IndexedTriangle {
         let denom = 1.0_f32 / determinant(&A);
         let beta = determinant(&B) * denom;
 
-        if beta < 0.0_f32 { return None; }
+        let spf = 1e-6_f32;
+
+        if beta < spf { return None; }
 
         let gamma = determinant(&Y) * denom;
 
-        if gamma < 0.0_f32 { return None; }
+        if gamma < spf { return None; }
 
         if beta + gamma > 1.0_f32 { return None; }
 
@@ -144,13 +146,14 @@ impl IndexedTriangle {
 
         let hit_point = ray.point_at(t);
         let alpha = (1.0_f32 - beta - gamma).max(0.0_f32);
-        let normal = (alpha * normals[self.i]) +
+        let normal = normalize((alpha * normals[self.i]) +
                      (beta * normals[self.j]) +
-                     (gamma * normals[self.k]);
+                     (gamma * normals[self.k]));
         let material_id = MaterialID(0);
 
         Some(Surfel{t, hit_point, normal, material_id})
     }
+
 }
 
 impl Mesh {
@@ -170,8 +173,14 @@ impl Mesh {
                 if line.is_empty() || line.starts_with('#') {
                     continue;
                 }
+
                 let split = line.split_whitespace();
                 let vec: Vec<&str> = split.collect();
+
+                if vec.len() < 4 {
+                    continue; // dragon.smf has a single line with 'f\n'
+                }
+
                 if vec[0] == "v" {
                     let x = vec[1].parse::<f32>().unwrap();
                     let y = vec[2].parse::<f32>().unwrap();

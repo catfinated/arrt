@@ -1,7 +1,7 @@
 bgcolor:
   r: 0
   g: 0
-  b: 0
+  b: 0.25
 width: 1024
 height: 1024
 ambient:
@@ -11,8 +11,8 @@ ambient:
 camera:
   eye:
     - 0.0
-    - 0.0
-    - 2.0
+    - 1.0
+    - 6.0
   up:
     - 0.0
     - 1.0
@@ -20,35 +20,35 @@ camera:
   look_at:
     - 0.0
     - 0.0
-    - -1.0
+    - 0.0
   dist: 1.0
-  fov: 56.0
+  fov: 60.0
 objects:
   - !Model
-      mesh: models/bound-cow.smf
-      material: bronze
+      mesh: models/dragon-50000.smf
+      material: gold
       transform:
         translate:
           - 0.0
-          - 0.0
+          - -1.0
           - 0.0
         rotate:
           - 0.0
-          - 0.0
+          - 180.0
           - 0.0
         scale:
-          - 1.5
-          - 1.5
-          - 1.5
+          - 3.0
+          - 3.0
+          - 3.0
 lights:
   - position:
-      - -5.0
-      - 2.0
-      - 5.0
+      - 1.0
+      - 4.0
+      - 6.0
     ambient:
-      r: 1.0
-      g: 1.0
-      b: 1.0
+      r: 0.0
+      g: 0.0
+      b: 0.0
     diffuse:
       r: 1.0
       g: 1.0
@@ -57,3 +57,4 @@ lights:
       r: 1.0
       g: 1.0
       b: 1.0
+

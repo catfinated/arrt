@@ -45,16 +45,17 @@ impl AABB {
     }
 
     fn vertices(&self) -> [Vec3; 8] {
-        [
+        let verts = [
             Vec3::new(self.min.x(), self.min.y(), self.min.z()),
             Vec3::new(self.max.x(), self.min.y(), self.min.z()),
             Vec3::new(self.min.x(), self.max.y(), self.min.z()),
             Vec3::new(self.min.x(), self.min.y(), self.max.z()),
+            Vec3::new(self.min.x(), self.max.y(), self.max.z()),
             Vec3::new(self.max.x(), self.min.y(), self.max.z()),
             Vec3::new(self.max.x(), self.max.y(), self.min.z()),
-            Vec3::new(self.min.x(), self.max.y(), self.max.z()),
             Vec3::new(self.max.x(), self.max.y(), self.max.z()),
-        ]
+        ];
+        verts
     }
 
     /// Transform bounding box 
@@ -68,18 +69,21 @@ impl AABB {
             mins[0] = mins[0].min(v.x());
             mins[1] = mins[1].min(v.y());
             mins[2] = mins[2].min(v.z());
+
             maxs[0] = maxs[0].max(v.x());
             maxs[1] = maxs[1].max(v.y());
             maxs[2] = maxs[2].max(v.z());            
         }
         
-        AABB{ min: Vec3::new(mins[0], mins[1], mins[2]), max: Vec3::new(maxs[0], maxs[1], maxs[2]) }
+        AABB{ min: Vec3::new(mins[0], mins[1], mins[2]), 
+          max: Vec3::new(maxs[0], maxs[1], maxs[2]) }
     }
 
     pub fn intersect(&self, ray: &Ray, range: Range) -> Option<f32> {
 
         let mut t_near = range.min;
         let mut t_far = range.max;
+
 
         for i in 0..3 { // for each axis
             let d = ray.direction[i];

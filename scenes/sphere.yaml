@@ -1,7 +1,7 @@
 bgcolor:
   r: 0
   g: 0
-  b: 0
+  b: 0.25
 width: 1024
 height: 1024
 ambient:
@@ -12,7 +12,7 @@ camera:
   eye:
     - 0.0
     - 0.0
-    - 2.0
+    - 4.0
   up:
     - 0.0
     - 1.0
@@ -24,27 +24,18 @@ camera:
   dist: 1.0
   fov: 56.0
 objects:
-  - !Model
-      mesh: models/bound-cow.smf
-      material: bronze
-      transform:
-        translate:
-          - 0.0
-          - 0.0
-          - 0.0
-        rotate:
-          - 0.0
-          - 0.0
-          - 0.0
-        scale:
-          - 1.5
-          - 1.5
-          - 1.5
+  - !Sphere
+      center:
+        - 0.0
+        - 0.0
+        - 0.0
+      radius: 1.0
+      material: ruby
 lights:
   - position:
-      - -5.0
-      - 2.0
-      - 5.0
+      - 1.0
+      - 4.0
+      - 6.0
     ambient:
       r: 1.0
       g: 1.0
@@ -57,3 +48,4 @@ lights:
       r: 1.0
       g: 1.0
       b: 1.0
+
