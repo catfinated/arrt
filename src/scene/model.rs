@@ -28,7 +28,6 @@ pub struct ModelConfig {
 pub struct Model {
     mesh: Mesh,
     material_id: MaterialID,
-    vertices: Vec<Vec3>,
     normals: Vec<Vec3>,
     pub bbox: AABB
 }
@@ -80,7 +79,6 @@ impl Transform {
 impl Model {
     pub fn new(fpath: &String, dpath: &String, material_id: MaterialID) -> Model { 
         let mesh = Mesh::new(fpath, dpath);
-        let mut vertices = Vec::with_capacity(mesh.vertices.len());
         let mut normals = Vec::with_capacity(mesh.vertices.len());
         let mut counts = Vec::with_capacity(mesh.vertices.len());
         normals.resize(mesh.vertices.len(), Vec3::zeros());
@@ -91,10 +89,7 @@ impl Model {
 
         // todo: vertices/normals/bbox now redundant between model and mesh.
         // combine the two since transformations are now handled with instancing.
-        for vert in &mesh.vertices {
-           let v = *vert;
-            vertices.push(v);
-
+        for v in &mesh.vertices {
             box_min.set_x(v.x().min(box_min.x()));
             box_min.set_y(v.y().min(box_min.y()));
             box_min.set_z(v.z().min(box_min.z()));
@@ -106,9 +101,9 @@ impl Model {
 
         // compute normals
         for tri in &mesh.triangles {
-            let v0 = vertices[tri.i];
-            let v1 = vertices[tri.j];
-            let v2 = vertices[tri.k];
+            let v0 = mesh.vertices[tri.i];
+            let v1 = mesh.vertices[tri.j];
+            let v2 = mesh.vertices[tri.k];
 
             let a = v1 - v0;
             let b = v2 - v0;
@@ -131,7 +126,7 @@ impl Model {
 
         let bbox = AABB::new(box_min, box_max);
         println!("model bbox: {:?}", bbox);
-        Model{ mesh, material_id, vertices, normals, bbox }
+        Model{ mesh, material_id, normals, bbox }
     }
 
     pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
@@ -140,7 +135,7 @@ impl Model {
         let mut surfel = None;
 
         for tri in &self.mesh.triangles {
-            if let Some(surf) = tri.intersect(ray, t_range, &self.vertices, &self.normals) {
+            if let Some(surf) = tri.intersect(ray, t_range, &self.mesh.vertices, &self.normals) {
                 t_range.max = surf.t;
                 surfel = Some(Surfel{material_id: self.material_id, ..surf});
             }
@@ -159,7 +154,7 @@ impl ModelInstance {
         let transform = transformations.mat4();
         let inverse = transformations.inverse();
         let bbox = model.bbox.transform(&transform);
-        println!("instance bbox: {:?}", bbox);
+        println!("instance bbox: {:?} center: {:?}", bbox, bbox.center());
         ModelInstance{model, material_id, bbox, transform, inverse}
     }
 
@@ -171,11 +166,12 @@ impl ModelInstance {
 
         if let Some(surf) = self.model.intersect(&r, range) {
             let hit_point = (&self.transform * Vec4::from_vec3(surf.hit_point, 1.0_f32)).to_vec3();
-            let t = surf.t;
-            // todo: original c++ impl had a note about using the t value computed from model space 
+            // original c++ impl had a note about using the t value computed from model space 
             // intersection here being incorrect and this seems true. however, suffern text says it should
-            // be passed back unmodified
+            // be passed back unmodified but this leads to incorrect clipping
             //println!("hit point: {:?} t {} tpoint: {:?}", hit_point, t, ray.point_at(t));
+            //let t = surf.t;
+            let t = (hit_point - ray.origin).x() / ray.direction.x();
             let it = self.inverse.transpose();
             let v4 = &it * Vec4::from_vec3(surf.normal, 0.0_f32);
             let normal = normalize(v4.to_vec3());

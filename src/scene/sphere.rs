@@ -48,10 +48,10 @@ impl Sphere {
         }
 
         let f = discriminant.sqrt();
-        let mut t = (-b - f) / 2.0_f32;
+        let mut t = (-b - f) / (2.0_f32 * a);
 
         if t < 0.0_f32 {
-            t = (-b + f) / 2.0_f32;
+            t = (-b + f) / (2.0_f32 * a);
         }
 
         if t < 0.0_f32 {

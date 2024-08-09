@@ -40,6 +40,59 @@ objects:
           - 3.0
           - 3.0
           - 3.0
+  - !Model
+      mesh: models/bound-bunny_5k.smf
+      material: silver
+      transform:
+        translate:
+          - 1.5
+          - 0.52
+          - 2.5
+        rotate:
+          - 0.0
+          - 180.0
+          - 0.0
+        scale:
+          - 0.6
+          - 0.6
+          - 0.6
+  - !Model
+      mesh: models/bound-bunny_1k.smf
+      material: shiny_yellow
+      transform:
+        translate:
+          - -2.5
+          - 2.0
+          - -2.0
+        rotate:
+          - 0.0
+          - 15.0
+          - 0.0
+        scale:
+          - 2.0
+          - 2.0
+          - 2.0
+  - !Sphere 
+      radius: 0.8
+      material: orange
+      center: 
+          - 2.4
+          - 1.4
+          - -1.1
+  - !Sphere 
+      radius: 0.3
+      material: shiny_blue
+      center: 
+          - -1.0
+          - 0.6
+          - 3.0
+  - !Sphere 
+      radius: 0.9
+      material: mauve
+      center: 
+          - -0.75
+          - 3.5
+          - -4.0
 lights:
   - position:
       - 1.0
