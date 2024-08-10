@@ -8,7 +8,7 @@ use crate::math::*;
 use super::mesh::Mesh;
 use super::material::{Surfel, MaterialID};
 use super::object::Object;
-use super::aabb::AABB;
+use super::aabb::Aabb;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -30,13 +30,13 @@ pub struct Model {
     mesh: Mesh,
     material_id: MaterialID,
     normals: Vec<Vec3>,
-    pub bbox: AABB
+    pub bbox: Aabb
 }
 
 pub struct ModelInstance {
     model: Arc<Model>,
     material_id: MaterialID,
-    pub bbox: AABB,
+    pub bbox: Aabb,
     transform: Mat4,
     inverse: Mat4
 }
@@ -50,9 +50,9 @@ impl Default for Transform {
 }
 
 impl Transform {
-    pub fn new(translate: Vec3, rotate: Vec3, scale: Vec3) -> Transform {
-        Transform{ translate, rotate, scale }
-    }
+   // pub fn new(translate: Vec3, rotate: Vec3, scale: Vec3) -> Transform {
+    //    Transform{ translate, rotate, scale }
+    //}
 
     /// Create combined transformation matrix
     pub fn mat4(&self) -> Mat4 {
@@ -125,7 +125,7 @@ impl Model {
             *norm = normalize(*norm / count);
         }
 
-        let bbox = AABB::new(box_min, box_max);
+        let bbox = Aabb::new(box_min, box_max);
         println!("model bbox: {:?}", bbox);
         Model{ mesh, material_id, normals, bbox }
     }
@@ -133,7 +133,7 @@ impl Model {
 
 impl Object for Model {
 
-    fn bbox(&self) -> Option<AABB>
+    fn bbox(&self) -> Option<Aabb>
     {
         Some(self.bbox)
     }
@@ -171,7 +171,7 @@ impl ModelInstance {
 
 impl Object for ModelInstance {
 
-    fn bbox(&self) -> Option<AABB>
+    fn bbox(&self) -> Option<Aabb>
     {
         Some(self.bbox)
     }

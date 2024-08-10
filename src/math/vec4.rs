@@ -20,7 +20,7 @@ impl Vec4 {
         Vec4{ dat: [ v.x(), v.y(), v.z(), w ] }
     }
 
-    pub fn to_vec3(&self) -> Vec3 {
+    pub fn to_vec3(self) -> Vec3 {
         Vec3{ dat: [self.dat[0], self.dat[1], self.dat[2]] }
     }
 }

@@ -4,24 +4,24 @@ use std::sync::Arc;
 use std::cmp::Ordering;
 use std::ops::Deref;
 
-use super::aabb::AABB;
+use super::aabb::Aabb;
 use super::object::Object;
 use super::material::Surfel;
 
-pub struct BVH {
+pub struct Bvh {
     left: Option<Arc<dyn Object>>,
     right: Option<Arc<dyn Object>>,
     objects: Vec<Arc<dyn Object>>,
-    pub bbox: AABB,
+    pub bbox: Aabb,
 }
 
-impl Default for BVH {
+impl Default for Bvh {
     fn default() -> Self {
-        Self{ left: None, right: None, objects: Vec::new(), bbox: AABB::maxmin() }
+        Self{ left: None, right: None, objects: Vec::new(), bbox: Aabb::maxmin() }
     }
 }
 
-impl BVH {
+impl Bvh {
     pub fn new(mut objects: Vec<Arc<dyn Object>>, axis: usize) -> Self
     {
         objects.sort_unstable_by(|a, b| centroid_cmp(a.deref(), b.deref(), axis));
@@ -30,23 +30,23 @@ impl BVH {
             objects.shrink_to_fit();
             let bbox = compute_bbox(&objects);
             println!("added BVH leaf with {} objects. bbox: {:?}", objects.len(), bbox);
-            BVH{ left: None, right: None, objects, bbox }
+            Bvh{ left: None, right: None, objects, bbox }
         }
         else {
             let next_axis = (axis + 1) % 3;
             let mid = objects.len() / 2;
             let rhs = objects.split_off(mid);
-            let left = Arc::new(BVH::new(objects, next_axis));
-            let right = Arc::new(BVH::new(rhs, next_axis));
+            let left = Arc::new(Bvh::new(objects, next_axis));
+            let right = Arc::new(Bvh::new(rhs, next_axis));
             let bbox = left.bbox.merge(&right.bbox);
-            BVH{ left: Some(left), right: Some(right), objects: Vec::new(), bbox }
+            Bvh{ left: Some(left), right: Some(right), objects: Vec::new(), bbox }
         }
     }
 }
 
-impl Object for BVH {
+impl Object for Bvh {
 
-    fn bbox(&self) -> Option<AABB>
+    fn bbox(&self) -> Option<Aabb>
     {
         Some(self.bbox)
     }
@@ -98,8 +98,8 @@ impl Object for BVH {
 
 }
 
-fn compute_bbox(objects: &Vec<Arc<dyn Object>>) -> AABB {
-    let mut bbox = AABB::maxmin();
+fn compute_bbox(objects: &Vec<Arc<dyn Object>>) -> Aabb {
+    let mut bbox = Aabb::maxmin();
 
     for object in objects {
         bbox = bbox.merge(&object.bbox().unwrap());

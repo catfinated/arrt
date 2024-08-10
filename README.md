@@ -9,7 +9,7 @@ tracer I wrote many years ago in a grad school class where the curriculum was ba
 
 This ray tracer is exteremly basic right now but the following features are included:
 
-* Sphere and simple mesh rendering
+* Sphere and simple model rendering
 * Bounding volume hiearchy based on axis aligned bounding boxes
 * Phong shading with point light sources
 * Adaptive super sampling (1 - 2x)

@@ -1,6 +1,6 @@
-pub mod math;
-pub mod framebuffer;
-pub mod scene;
+mod math;
+mod objects;
+mod scene;
+
 pub mod render;
 pub mod args;
-pub mod objects;

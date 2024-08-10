@@ -9,8 +9,8 @@ pub mod aabb;
 mod mesh;
 
 pub use plane::Plane;
-pub use sphere::{Sphere, SphereConfig};
+pub use sphere::Sphere;
 pub use object::Object;
 pub use material::{Material, MaterialMap, Surfel};
-pub use model::{Model, ModelInstance, ModelConfig};
-pub use bvh::BVH;
+pub use model::{Model, ModelInstance};
+pub use bvh::Bvh;

@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::math::{dot, in_range, Range, Ray, Vec3};
 
-use super::aabb::AABB;
+use super::aabb::Aabb;
 use super::material::{MaterialID, Surfel};
 use super::object::Object;
 
@@ -26,7 +26,7 @@ impl Plane {
 }
 
 impl Object for Plane {
-    fn bbox(&self) -> Option<AABB> {
+    fn bbox(&self) -> Option<Aabb> {
         None
     }
 

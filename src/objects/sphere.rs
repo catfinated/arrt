@@ -4,7 +4,7 @@ use crate::math::*;
 
 use super::material::{Surfel, MaterialID};
 use super::object::Object;
-use super::aabb::AABB;
+use super::aabb::Aabb;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SphereConfig {
@@ -18,13 +18,13 @@ pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
     pub material_id: MaterialID,
-    pub bbox: AABB
+    pub bbox: Aabb
 }
 
 impl Sphere {
     pub fn new(config: &SphereConfig, material: MaterialID) -> Sphere {
 
-        let bbox = AABB::new(config.center - config.radius,
+        let bbox = Aabb::new(config.center - config.radius,
                              config.center + config.radius);
 
         Sphere { center: config.center,
@@ -40,7 +40,7 @@ impl Sphere {
 
 impl Object for Sphere {
 
-    fn bbox(&self) -> Option<AABB>
+    fn bbox(&self) -> Option<Aabb>
     {
         Some(self.bbox)
     }

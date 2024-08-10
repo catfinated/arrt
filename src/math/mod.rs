@@ -15,7 +15,6 @@ pub use mat4::Mat4;
 use serde::{Serialize, Deserialize};
 
 const PI_OVER_ONE_EIGHTY : f32 = std::f32::consts::PI / 180.0_f32;
-const ONE_EIGHTY_OVER_PI : f32 = 180.0_f32 / std::f32::consts::PI;
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct Degree(pub f32);
@@ -23,10 +22,6 @@ pub struct Radian(pub f32);
 
 pub fn to_radians(d: Degree) -> Radian {
     Radian(d.0 * PI_OVER_ONE_EIGHTY)
-}
-
-pub fn to_degrees(r: Radian) -> Degree {
-    Degree(r.0 * ONE_EIGHTY_OVER_PI)
 }
 
 impl Radian {

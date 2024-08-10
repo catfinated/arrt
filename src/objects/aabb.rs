@@ -5,7 +5,7 @@ use std::mem;
 use std::f32;
 
 #[derive(Copy, Clone, Debug)]
-pub struct AABB {
+pub struct Aabb {
     min: Vec3,
     max: Vec3,
 }
@@ -15,17 +15,17 @@ fn nearly_zero(f: f32) -> bool {
     abs_diff <= (2.0_f32 * f32::EPSILON)
 }
 
-impl AABB {
-    pub fn new(min: Vec3, max: Vec3) -> AABB {
-        AABB{ min, max }
+impl Aabb {
+    pub fn new(min: Vec3, max: Vec3) -> Self {
+        Aabb{ min, max }
     }
 
-    pub fn zero() -> AABB {
-        AABB::new(Vec3::zeros(), Vec3::zeros())
+    pub fn zero() -> Aabb {
+        Aabb::new(Vec3::zeros(), Vec3::zeros())
     }
 
-    pub fn maxmin() -> AABB {
-        AABB::new(Vec3::fill(f32::MAX), Vec3::fill(f32::MIN))
+    pub fn maxmin() -> Self {
+        Aabb::new(Vec3::fill(f32::MAX), Vec3::fill(f32::MIN))
     }
 
     pub fn center(&self) -> Vec3 {
@@ -41,7 +41,7 @@ impl AABB {
                             self.max.y().max(other.max.y()),
                             self.max.z().max(other.max.z()));
 
-        AABB{ min, max }
+        Aabb{ min, max }
     }
 
     fn vertices(&self) -> [Vec3; 8] {
@@ -74,7 +74,7 @@ impl AABB {
             maxs[2] = maxs[2].max(v.z());            
         }
         
-        AABB{ min: Vec3::new(mins[0], mins[1], mins[2]), 
+        Aabb{ min: Vec3::new(mins[0], mins[1], mins[2]), 
           max: Vec3::new(maxs[0], maxs[1], maxs[2]) }
     }
 

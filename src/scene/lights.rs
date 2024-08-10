@@ -1,12 +1,11 @@
 use serde::{Serialize, Deserialize};
 
-use crate::framebuffer::ColorRGB;
+use crate::render::ColorRGB;
 use crate::math::*;
 
 pub trait Light {
     fn direction_from(&self, from: Vec3) -> Vec3;
     fn intensity_at(&self, at: Vec3) -> f32;
-    fn ambient(&self) -> ColorRGB;
     fn diffuse(&self) -> ColorRGB;
     fn specular(&self) -> ColorRGB;
 }
@@ -35,10 +34,6 @@ impl Light for PointLight {
 
     fn intensity_at(&self, _at: Vec3) -> f32 {
         1.0_f32
-    }
-
-    fn ambient(&self) -> ColorRGB {
-        self.ambient
     }
 
     fn diffuse(&self) -> ColorRGB {

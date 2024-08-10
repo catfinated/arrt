@@ -1,6 +1,4 @@
 use std::ops::{Index, IndexMut};
-
-use super::vec3::Vec3;
 /*
     [ 0,  1,  2,
       3,  4,  5,
@@ -18,23 +16,6 @@ impl Mat3 {
         Mat3{ dat: [xx, xy, xz, yx, yy, yz, zx, zy, zz] }
     }
 
-    pub fn from_vecs(x: Vec3, y: Vec3, z: Vec3) -> Mat3 {
-        Mat3{ dat: [x.x(), x.y(), x.z(),
-                    y.x(), y.y(), y.z(),
-                    z.x(), z.y(), z.z()] }
-    }
-
-    pub fn fill(v: f32) -> Mat3 {
-        Mat3{ dat: [v; 9] }
-    }
-
-    pub fn identity() -> Mat3 {
-        let mut m = Mat3::fill(0.0_f32);
-        m.dat[0] = 1.0f32;
-        m.dat[4] = 1.0f32;
-        m.dat[8] = 1.0f32;
-        m
-    }
 }
 
 impl Index<usize> for Mat3 {

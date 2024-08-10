@@ -7,12 +7,10 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use serde;
-use serde_yaml;
 use serde::{Serialize, Deserialize};
 
-use crate::framebuffer::ColorRGB;
-use crate::objects::{MaterialMap, Object, Sphere, Model, ModelInstance, BVH, Surfel, Material, Plane};
+use crate::render::ColorRGB;
+use crate::objects::{MaterialMap, Object, Sphere, Model, ModelInstance, Bvh, Surfel, Material, Plane};
 
 use camera::CameraConfig;
 use lights::PointLight;
@@ -77,7 +75,7 @@ impl Scene {
             }
         }
 
-        all_objs.push(Arc::new(BVH::new(bounded_objs, 0)));
+        all_objs.push(Arc::new(Bvh::new(bounded_objs, 0)));
         println!("all objects {}", all_objs.len());
         all_objs
     }

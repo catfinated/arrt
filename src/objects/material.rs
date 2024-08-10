@@ -6,7 +6,7 @@ use serde;
 use serde_yaml;
 use serde::{Serialize, Deserialize};
 
-use crate::framebuffer::ColorRGB;
+use crate::render::ColorRGB;
 use crate::math::Vec3;
 
 #[derive(Debug, Serialize, Deserialize)]
