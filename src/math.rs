@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
+use std::ops::{Add, Sub, Mul, Div, Index, IndexMut, Neg};
 use serde::{Serialize, Deserialize};
 
 const PI_OVER_ONE_EIGHTY : f32 = std::f32::consts::PI / 180.0_f32;
@@ -168,6 +168,14 @@ impl Index<usize> for Vec3 {
 
     fn index(&self, i: usize) -> &Self::Output {
         &self.dat[i]
+    }
+}
+
+impl Neg for Vec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        Vec3::new(-self.x(), -self.y(), -self.z())
     }
 }
 

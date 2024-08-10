@@ -24,44 +24,27 @@ camera:
   dist: 1.0
   fov: 56.0
 objects:
-  - !Sphere 
-      radius: 0.1
-      material: red
-      center: 
-          - 0.0
-          - 0.0
-          - 0.6
-  - !Plane 
-      point: 
-          - 0.0
-          - -1.0
-          - 0.0
-      normal:
-          - 0.0
-          - 1.0
-          - 0.0 
-      material: silver
   - !Model
-      mesh: models/bound-cow.smf
-      material: bronze
+      mesh: models/fish.smf
+      material: silver
       transform:
         translate:
           - 0.0
           - 0.0
-          - 0.0
+          - -2.0
         rotate:
           - 0.0
           - 0.0
           - 0.0
         scale:
-          - 1.5
-          - 1.5
-          - 1.5
+          - 0.25
+          - 0.25
+          - 0.25
 lights:
   - position:
-      - -5.0
+      - 0.0
+      - 0.0
       - 2.0
-      - 5.0
     ambient:
       r: 1.0
       g: 1.0

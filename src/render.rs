@@ -1,8 +1,9 @@
-use crate::scene::{Camera, Light, Scene, Surfel, Material, Object};
+use crate::scene::{Camera, Light, Scene};
+use crate::objects::{Surfel, Material, Object};
 use crate::framebuffer::{Framebuffer, ColorRGB};
-use crate::math::{normalize, dot, Vec3, Ray};
-use crate::bvh::BVH;
+use crate::math::{normalize, dot, Vec3, Ray, Range};
 
+use std::sync::Arc;
 use std::time::{Instant, Duration};
 
 use rayon::prelude::*;
@@ -109,7 +110,8 @@ fn colors_differ(a: &ColorRGB, b: &ColorRGB) -> bool {
 struct RayTracer {
     scene: Scene,
     camera: Camera,
-    bvh: BVH<Object>,
+    //bvh: BVH,
+    objects: Vec<Arc<dyn Object>>
 }
 
 #[derive(Copy,Clone)]
@@ -194,15 +196,24 @@ impl<'tracer> TraceContext<'tracer> {
 impl RayTracer {
     fn new(scene: Scene) -> Self {
         let camera = scene.make_camera();
-        let bvh = scene.make_bvh();
-        println!("bbox: {:?}", bvh.bbox);
+        let objects = scene.make_objects();
+        //println!("bbox: {:?}", bvh.bbox);
         RayTracer{scene,
                   camera,
-                  bvh}
+                  objects}
     }
 
     fn trace_ray(&self, ray: &Ray) -> (ColorRGB, bool) {
-        let surfel = self.bvh.intersect(ray);
+        let mut range = Range{ min: 1e-6, max: f32::MAX };
+        let mut surfel = None;
+
+        for object in &self.objects {
+            if let Some(surf) = object.intersect(ray, range) {
+                    range.max = surf.t;
+                    surfel = Some(surf);
+            }
+            
+        }
 
         match surfel {
             Some(surf) => {

@@ -1,10 +1,6 @@
 pub mod camera;
 pub mod lights;
 pub mod objects;
-pub mod material;
-pub mod mesh;
-pub mod sphere;
-pub mod model;
 
 use std::fs;
 use std::collections::HashMap;
@@ -15,8 +11,8 @@ use serde;
 use serde_yaml;
 use serde::{Serialize, Deserialize};
 
-use crate::bvh::BVH;
 use crate::framebuffer::ColorRGB;
+use crate::objects::{MaterialMap, Object, Sphere, Model, ModelInstance, BVH, Surfel, Material, Plane};
 
 use camera::CameraConfig;
 use lights::PointLight;
@@ -24,10 +20,6 @@ use objects::ObjectConfig;
 
 pub use camera::Camera;
 pub use lights::Light;
-pub use sphere::Sphere;
-pub use model::{Model, ModelInstance, Transform};
-pub use objects::Object;
-pub use material::{Material, MaterialID, MaterialMap, Surfel};
 
 #[derive(Serialize, Deserialize)]
 struct SceneConfig {
@@ -60,29 +52,34 @@ impl Scene {
         Scene{config, materials_map}
     }
 
-    pub fn make_bvh(&self) -> BVH<Object>
-    {
-        let mut objs = Vec::new();
+    pub fn make_objects(&self) -> Vec<Arc<dyn Object>> {
+        let mut all_objs: Vec<Arc<dyn Object>> = Vec::new();
+        let mut bounded_objs: Vec<Arc<dyn Object>> = Vec::new();
         let mesh_dir = &self.config.mesh_dir;
         let mut models = HashMap::new();
 
         for obj in &self.config.objects {
             match obj {
                 ObjectConfig::Sphere(s) => {
-                    objs.push(Object::Sphere(Sphere::new(s, self.materials_map.get_material_id(&s.material))));
+                    bounded_objs.push(Arc::new(Sphere::new(s, self.materials_map.get_material_id(&s.material))));
                 }
                 ObjectConfig::Model(m) => {
                     let material_id = self.materials_map.get_material_id(&m.material);
                     let model: &Arc<Model> = models.entry(m.mesh.clone())
                     .or_insert_with(|| Arc::new(Model::new(&m.mesh, mesh_dir, material_id)));
-                    objs.push(Object::ModelInstance(ModelInstance::new(model.clone(),
+                    bounded_objs.push(Arc::new(ModelInstance::new(model.clone(),
                                                        material_id,
                                                        &m.transform)));
+                },
+                ObjectConfig::Plane(p) => {
+                    all_objs.push(Arc::new(Plane::new(p, self.materials_map.get_material_id(&p.material))));
                 }
             }
         }
 
-        BVH::new(objs, 0)
+        all_objs.push(Arc::new(BVH::new(bounded_objs, 0)));
+        println!("all objects {}", all_objs.len());
+        all_objs
     }
 
     pub fn make_camera(&self) -> Camera

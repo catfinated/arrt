@@ -93,6 +93,16 @@ objects:
           - -0.75
           - 3.5
           - -4.0
+  - !Plane 
+      point: 
+          - 0.0
+          - -1.0
+          - 0.0
+      normal:
+          - 0.0
+          - 1.0
+          - 0.0 
+      material: gold
 lights:
   - position:
       - 1.0

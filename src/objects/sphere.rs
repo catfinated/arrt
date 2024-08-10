@@ -1,9 +1,10 @@
 use serde::{Serialize, Deserialize};
 
 use crate::math::*;
-use crate::aabb::AABB;
 
 use super::material::{Surfel, MaterialID};
+use super::object::Object;
+use super::aabb::AABB;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SphereConfig {
@@ -35,8 +36,21 @@ impl Sphere {
     fn normal_at(&self, point: Vec3) -> Vec3 {
         normalize(point - self.center)
     }
+}
 
-    pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
+impl Object for Sphere {
+
+    fn bbox(&self) -> Option<AABB>
+    {
+        Some(self.bbox)
+    }
+
+    fn centroid(&self) -> Vec3
+    {
+        self.center
+    }
+
+    fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
         let a = sum(square(ray.direction));
         let v = ray.origin - self.center;
         let b = 2.0_f32 * sum(ray.direction * v);

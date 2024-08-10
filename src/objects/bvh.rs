@@ -1,36 +1,34 @@
 use crate::math::*;
-use crate::aabb::AABB;
-use crate::scene::Surfel;
 
+use std::sync::Arc;
 use std::cmp::Ordering;
+use std::ops::Deref;
 
-pub trait BvhNode {
-    fn centroid(&self) -> Vec3;
-    fn bbox(&self) -> AABB;
-    fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel>;
-}
+use super::aabb::AABB;
+use super::object::Object;
+use super::material::Surfel;
 
-pub struct BVH<T: BvhNode> {
-    left: Option<Box<BVH<T>>>,
-    right: Option<Box<BVH<T>>>,
-    objects: Vec<T>,
+pub struct BVH {
+    left: Option<Arc<dyn Object>>,
+    right: Option<Arc<dyn Object>>,
+    objects: Vec<Arc<dyn Object>>,
     pub bbox: AABB,
 }
 
-impl<T: BvhNode> Default for BVH<T> {
+impl Default for BVH {
     fn default() -> Self {
         Self{ left: None, right: None, objects: Vec::new(), bbox: AABB::maxmin() }
     }
 }
 
-impl<T: BvhNode> BVH<T> {
-    pub fn new(mut objects: Vec<T>, axis: usize) -> BVH<T>
+impl BVH {
+    pub fn new(mut objects: Vec<Arc<dyn Object>>, axis: usize) -> Self
     {
-        objects.sort_unstable_by(|a, b| centroid_cmp(a, b, axis));
+        objects.sort_unstable_by(|a, b| centroid_cmp(a.deref(), b.deref(), axis));
 
         if objects.len() <= 1 {
             objects.shrink_to_fit();
-            let bbox = compute_bbox(&objects[..]);
+            let bbox = compute_bbox(&objects);
             println!("added BVH leaf with {} objects. bbox: {:?}", objects.len(), bbox);
             BVH{ left: None, right: None, objects, bbox }
         }
@@ -38,42 +36,46 @@ impl<T: BvhNode> BVH<T> {
             let next_axis = (axis + 1) % 3;
             let mid = objects.len() / 2;
             let rhs = objects.split_off(mid);
-            let left = Box::new(BVH::new(objects, next_axis));
-            let right = Box::new(BVH::new(rhs, next_axis));
+            let left = Arc::new(BVH::new(objects, next_axis));
+            let right = Arc::new(BVH::new(rhs, next_axis));
             let bbox = left.bbox.merge(&right.bbox);
             BVH{ left: Some(left), right: Some(right), objects: Vec::new(), bbox }
         }
     }
+}
 
-    pub fn centroid(&self) -> Vec3 {
+impl Object for BVH {
+
+    fn bbox(&self) -> Option<AABB>
+    {
+        Some(self.bbox)
+    }
+
+    fn centroid(&self) -> Vec3 {
         self.bbox.center()
-    }
+    }   
 
-    pub fn intersect(&self, ray: &Ray) -> Option<Surfel> {
-        let range = Range{ min: 1e-6, max: f32::MAX };
-        self.intersect_with_range(ray, range)
-    }
-
-    pub fn intersect_with_range(&self, ray: &Ray, mut range: Range) -> Option<Surfel>
+    fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel>
     {
         let mut ret = None;
+        let mut trange = range;
 
-        if let Some(_) = self.bbox.intersect(ray, range) {
+        if self.bbox.intersect(ray, range).is_some() {
             // todo: figure out where the bug is
-            //range.min = t; <-- this causes objects scaled > 1.0 to not be visible
-            //range.max = t; <-- this causes objects scaled < 1.0 to not be visible
+            //trange.min = t; <-- this causes objects scaled > 1.0 to not be visible
+            //trange.max = t; <-- this causes objects scaled < 1.0 to not be visible
 
             if !self.objects.is_empty() {
                 for object in self.objects.iter() {
-                    if let Some(surf) = object.intersect(ray, range) {
-                        range.max = surf.t; // ensure intersections behind this surfel hit point are not considered
+                    if let Some(surf) = object.intersect(ray, trange) {
+                        trange.max = surf.t; // ensure intersections behind this surfel hit point are not considered
                         ret = Some(surf);
                     }
                 }
             }
             else {
-                let maybe_l_surf = self.left.as_ref().and_then(|node| node.intersect_with_range(ray, range));
-                let maybe_r_surf = self.right.as_ref().and_then(|node| node.intersect_with_range(ray, range));
+                let maybe_l_surf = self.left.as_ref().and_then(|node| node.intersect(ray, trange));
+                let maybe_r_surf = self.right.as_ref().and_then(|node| node.intersect(ray, trange));
 
                 match (maybe_l_surf, maybe_r_surf) {
                     (Some(l_surf), Some(r_surf)) => {
@@ -93,19 +95,20 @@ impl<T: BvhNode> BVH<T> {
 
         ret
     }
+
 }
 
-fn compute_bbox<T: BvhNode>(objects: &[T]) -> AABB {
+fn compute_bbox(objects: &Vec<Arc<dyn Object>>) -> AABB {
     let mut bbox = AABB::maxmin();
 
     for object in objects {
-        bbox = bbox.merge(&object.bbox());
+        bbox = bbox.merge(&object.bbox().unwrap());
     }
 
     bbox
 }
 
-fn centroid_cmp<T: BvhNode>(lhs: &T, rhs: &T, axis: usize) ->  Ordering {
+fn centroid_cmp(lhs: &dyn Object, rhs: &dyn Object, axis: usize) ->  Ordering {
     let lhs_centroid = lhs.centroid();
     let rhs_centroid = rhs.centroid();
     lhs_centroid[axis].partial_cmp(&rhs_centroid[axis]).unwrap()

@@ -5,16 +5,9 @@ use std::io::{self, BufRead};
 use std::path::Path;
 
 use crate::math::*;
-use super::{Surfel, MaterialID};
+use super::material::{Surfel, MaterialID};
 
-#[derive(Debug)]
 pub struct Triangle {
-    v0: Vec3,
-    v1: Vec3,
-    v2: Vec3
-}
-
-pub struct IndexedTriangle {
     pub i: usize,
     pub j: usize,
     pub k: usize
@@ -22,69 +15,11 @@ pub struct IndexedTriangle {
 
 pub struct Mesh {
     pub vertices: Vec<Vec3>,
-    pub triangles: Vec<IndexedTriangle>,
+    pub triangles: Vec<Triangle>,
     pub normals: Vec<Vec3>,
 }
 
 impl Triangle {
-    pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
-        let a = self.v0.x() - self.v1.x();
-        let b = self.v0.x() - self.v2.x();
-        let c = ray.direction.x();
-        let d = self.v0.x() - ray.origin.x();
-
-        let e = self.v0.y() - self.v1.y();
-        let f = self.v0.y() - self.v2.y();
-        let g = ray.direction.y();
-        let h = self.v0.y() - ray.origin.y();
-
-        let i = self.v0.z() - self.v1.z();
-        let j = self.v0.z() - self.v2.z();
-        let k = ray.direction.z();
-        let l = self.v0.z() - ray.origin.z();
-
-        let A = Mat3::new(a, b, c,
-                          e, f, g,
-                          i, j, k);
-
-        let B = Mat3::new(d, b, c,
-                          h, f, g,
-                          l, j, k);
-
-        let Y = Mat3::new(a, d, c,
-                          e, h, g,
-                          i, l, k);
-
-        let T = Mat3::new(a, b, d,
-                          e, f, h,
-                          i, j, l);
-
-        let denom = 1.0 / determinant(&A);
-        let beta = determinant(&B) * denom;
-
-        if beta < 0.0 { return None; }
-
-        let gamma = determinant(&Y) * denom;
-
-        if gamma < 0.0 { return None; }
-
-        if beta + gamma > 1.0 { return None; }
-
-        let t = determinant(&T) * denom;
-
-        if !in_range(range, t) {
-            return None;
-        }
-
-        let hit_point = ray.point_at(t);
-        let normal = Vec3::new(0.0, 0.0, 0.0); // TODO
-        let material_id = MaterialID(0);
-
-        Some(Surfel{t, hit_point, normal, material_id})
-    }
-}
-
-impl IndexedTriangle {
 
     pub fn intersect(&self, ray: &Ray,
                      range: Range,
@@ -191,7 +126,7 @@ impl Mesh {
                     let i = vec[1].parse::<usize>().unwrap() - 1;
                     let j = vec[2].parse::<usize>().unwrap() - 1;
                     let k = vec[3].parse::<usize>().unwrap() - 1;
-                    mesh.triangles.push(IndexedTriangle{ i, j, k });
+                    mesh.triangles.push(Triangle{ i, j, k });
                 }
                 else if vec[0] == "n" {
                     let a = vec[1].parse::<f32>().unwrap();

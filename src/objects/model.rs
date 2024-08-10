@@ -4,10 +4,11 @@ use serde;
 use serde::{Serialize, Deserialize};
 
 use crate::math::*;
-use crate::aabb::AABB;
 
 use super::mesh::Mesh;
 use super::material::{Surfel, MaterialID};
+use super::object::Object;
+use super::aabb::AABB;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -128,8 +129,21 @@ impl Model {
         println!("model bbox: {:?}", bbox);
         Model{ mesh, material_id, normals, bbox }
     }
+}
 
-    pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
+impl Object for Model {
+
+    fn bbox(&self) -> Option<AABB>
+    {
+        Some(self.bbox)
+    }
+
+    fn centroid(&self) -> Vec3
+    {
+        self.bbox.center()
+    }
+
+    fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
 
         let mut t_range = range;
         let mut surfel = None;
@@ -143,10 +157,6 @@ impl Model {
 
         surfel
     }
-
-    pub fn centroid(&self) -> Vec3 {
-        self.bbox.center()
-    }
 }
 
 impl ModelInstance {
@@ -157,8 +167,21 @@ impl ModelInstance {
         println!("instance bbox: {:?} center: {:?}", bbox, bbox.center());
         ModelInstance{model, material_id, bbox, transform, inverse}
     }
+}
 
-    pub fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
+impl Object for ModelInstance {
+
+    fn bbox(&self) -> Option<AABB>
+    {
+        Some(self.bbox)
+    }
+
+    fn centroid(&self) -> Vec3
+    {
+        self.bbox.center()
+    }
+
+    fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
         let o = (&self.inverse * Vec4::from_vec3(ray.origin, 1.0_f32)).to_vec3();
         let d = (&self.inverse * Vec4::from_vec3(ray.direction, 0.0_f32)).to_vec3();
         let r = Ray{origin: o, direction: normalize(d)};
@@ -179,9 +202,5 @@ impl ModelInstance {
             surfel = Some(Surfel{t, hit_point, normal, material_id})
         }
         surfel
-    }
-
-    pub fn centroid(&self) -> Vec3 {
-        self.bbox.center()
     }
 }

@@ -34,7 +34,7 @@ pub struct Surfel {
     pub t: f32,
     pub hit_point: Vec3,
     pub normal: Vec3,
-    pub (super) material_id: MaterialID,
+    pub material_id: MaterialID,
 }
 
 impl Default for Material {

@@ -45,7 +45,7 @@ impl AABB {
     }
 
     fn vertices(&self) -> [Vec3; 8] {
-        let verts = [
+        [
             Vec3::new(self.min.x(), self.min.y(), self.min.z()),
             Vec3::new(self.max.x(), self.min.y(), self.min.z()),
             Vec3::new(self.min.x(), self.max.y(), self.min.z()),
@@ -54,8 +54,7 @@ impl AABB {
             Vec3::new(self.max.x(), self.min.y(), self.max.z()),
             Vec3::new(self.max.x(), self.max.y(), self.min.z()),
             Vec3::new(self.max.x(), self.max.y(), self.max.z()),
-        ];
-        verts
+        ]
     }
 
     /// Transform bounding box 
