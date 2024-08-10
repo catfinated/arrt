@@ -197,7 +197,6 @@ impl RayTracer {
     fn new(scene: Scene) -> Self {
         let camera = scene.make_camera();
         let objects = scene.make_objects();
-        //println!("bbox: {:?}", bvh.bbox);
         RayTracer{scene,
                   camera,
                   objects}
@@ -211,8 +210,7 @@ impl RayTracer {
             if let Some(surf) = object.intersect(ray, range) {
                     range.max = surf.t;
                     surfel = Some(surf);
-            }
-            
+            } 
         }
 
         match surfel {
