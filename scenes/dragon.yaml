@@ -2,8 +2,8 @@ bgcolor:
   r: 0
   g: 0
   b: 0.25
-width: 1024
-height: 1024
+width: 512
+height: 512
 ambient:
   r: 1.0
   g: 1.0

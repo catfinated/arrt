@@ -9,9 +9,10 @@ tracer I wrote many years ago in a grad school class where the curriculum was ba
 
 This ray tracer is exteremly basic right now but the following features are included:
 
-* Sphere and simple model rendering
+* Sphere, plane and simple model rendering
 * Bounding volume hiearchy based on axis aligned bounding boxes
-* Phong shading with point and spot light sources
+* Phong/Hall shading with point and spot light sources
+* Shadows
 * Adaptive super sampling (1 - 2x)
 * Parallelized tracing and rendering with rayon
 * Model instancing
@@ -21,6 +22,7 @@ Here are some examples of what it can currently prodcue:
 ![Example 1](docs/scene.png)
 ![Example 2](docs/bunnies.png)
 ![Example 3](docs/cows.png)
+![Example 4](docs/cow2.png)
 
 ## TODO
 

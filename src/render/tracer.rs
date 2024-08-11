@@ -1,9 +1,8 @@
-use std::ops::Deref;
 use std::sync::Arc;
 use std::time::{Instant, Duration};
 
 use super::{ColorRGB, XYCoord};
-use super::shade::phong_shade;
+use super::shade::hall_shade;
 
 use crate::scene::{Camera, Scene};
 use crate::math::{Ray, Range};
@@ -123,13 +122,10 @@ impl RayTracer {
 
         match surfel {
             Some(surf) => {
-                let mut color = ColorRGB::black();
                 let material = self.scene.material_for_surfel(&surf);
                 let ambient = self.scene.ambient() * material.ka * material.ambient;
-
-                for light in self.scene.lights().iter() {
-                    color += phong_shade(light.deref(), &self.camera.eye, &surf, material);
-                }
+                //let mut color = phong_shade(self.scene.lights(), &self.camera.eye, &surf, material);
+                let mut color = hall_shade(self.scene.lights(), &self.camera.eye, &surf, material, self);
 
                 color += ambient;
                 color = color.clamp(0.0_f32, 1.0_f32);
@@ -138,5 +134,21 @@ impl RayTracer {
             None => { (self.scene.bgcolor(), false) }
         }
     }
+
+    /// Calculate light intensity due to shadowing
+    pub fn shadow(&self, ray: &Ray, light_intensity: f32) -> f32 {
+        let range = Range{min: 0.001_f32, max: f32::MAX};
+
+        for object in &self.objects {
+            // todo: transmissive materials
+            if object.intersect(ray, range).is_some() {
+                // todo: transmissive materials
+                return 0.0_f32;
+            } 
+        }
+
+        light_intensity
+    }
+
 }
 
