@@ -35,19 +35,20 @@ objects:
       radius: 0.5
       material: green
 lights:
-  - position:
-      - -1.0
-      - 2.0
-      - 2.0
-    ambient:
-      r: 1.0
-      g: 1.0
-      b: 1.0
-    diffuse:
-      r: 1.0
-      g: 1.0
-      b: 1.0
-    specular:
-      r: 1.0
-      g: 1.0
-      b: 1.0
+  - !Point
+      position:
+        - -1.0
+        - 2.0
+        - 2.0
+      ambient:
+        r: 1.0
+        g: 1.0
+        b: 1.0
+      diffuse:
+        r: 1.0
+        g: 1.0
+        b: 1.0
+      specular:
+        r: 1.0
+        g: 1.0
+        b: 1.0

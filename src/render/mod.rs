@@ -3,6 +3,7 @@ pub mod framebuffer;
 
 mod pixel;
 mod tracer;
+mod shade;
 
 pub use color::ColorRGB;
 pub use framebuffer::Framebuffer;

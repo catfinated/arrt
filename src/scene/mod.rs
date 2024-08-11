@@ -1,6 +1,7 @@
 pub mod camera;
-pub mod lights;
-pub mod objects;
+
+mod objects;
+mod lights;
 
 use std::fs;
 use std::collections::HashMap;
@@ -11,13 +12,13 @@ use serde::{Serialize, Deserialize};
 
 use crate::render::ColorRGB;
 use crate::objects::{MaterialMap, Object, Sphere, Model, ModelInstance, Bvh, Surfel, Material, Plane};
+use crate::lights::{Light, PointLight, SpotLight};
 
 use camera::CameraConfig;
-use lights::PointLight;
 use objects::ObjectConfig;
+use lights::LightsConfig;
 
 pub use camera::Camera;
-pub use lights::Light;
 
 #[derive(Serialize, Deserialize)]
 struct SceneConfig {
@@ -32,12 +33,13 @@ struct SceneConfig {
     #[serde(default)]
     objects: Vec<ObjectConfig>,
     #[serde(default)]
-    lights: Vec<PointLight>,
+    lights: Vec<LightsConfig>,
 }
 
 pub struct Scene {
     config: SceneConfig,
     materials_map: MaterialMap,
+    lights: Vec<Arc<dyn Light>>,
 }
 
 impl Scene {
@@ -47,7 +49,20 @@ impl Scene {
         let yaml = fs::read_to_string(fpath).unwrap();
         let config: SceneConfig = serde_yaml::from_str(&yaml).unwrap();
         let materials_map = MaterialMap::new(&mat_path);
-        Scene{config, materials_map}
+        let mut lights: Vec<Arc<dyn Light>> = Vec::new();
+
+        for light in &config.lights {
+            match light {
+                LightsConfig::Point(pl) => {
+                    lights.push(Arc::new(PointLight{..*pl}));
+                }
+                LightsConfig::Spot(sl) => {
+                    lights.push(Arc::new(SpotLight{..*sl}));
+                }
+            }
+        }
+
+        Scene{config, materials_map, lights}
     }
 
     pub fn make_objects(&self) -> Vec<Arc<dyn Object>> {
@@ -93,8 +108,8 @@ impl Scene {
         self.config.height
     }
 
-    pub fn lights(&self) -> &Vec<PointLight> {
-        &self.config.lights
+    pub fn lights(&self) -> &Vec<Arc<dyn Light>> {
+        &self.lights
     }
 
     pub fn ambient(&self) -> ColorRGB {

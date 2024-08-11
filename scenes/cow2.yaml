@@ -11,8 +11,8 @@ ambient:
 camera:
   eye:
     - 0.0
-    - 0.0
-    - 2.0
+    - 1.0
+    - 4.0
   up:
     - 0.0
     - 1.0
@@ -58,20 +58,18 @@ objects:
           - 1.5
           - 1.5
 lights:
-  - !Point
+  - !Spot
+      color:
+        r: 1.0
+        g: 1.0
+        b: 1.0  
       position:
-        - -5.0
+        - 0.0
         - 2.0
-        - 5.0
-      ambient:
-        r: 1.0
-        g: 1.0
-        b: 1.0
-      diffuse:
-        r: 1.0
-        g: 1.0
-        b: 1.0
-      specular:
-        r: 1.0
-        g: 1.0
-        b: 1.0
+        - 0.0
+      direction:
+        - 0.0
+        - -1.0
+        - 0.0
+      angle: 60
+      sharpness: 2

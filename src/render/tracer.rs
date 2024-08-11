@@ -1,11 +1,13 @@
+use std::ops::Deref;
 use std::sync::Arc;
 use std::time::{Instant, Duration};
 
 use super::{ColorRGB, XYCoord};
+use super::shade::phong_shade;
 
-use crate::scene::{Camera, Scene, Light};
-use crate::math::{normalize, dot, Vec3, Ray, Range};
-use crate::objects::{Surfel, Material, Object};
+use crate::scene::{Camera, Scene};
+use crate::math::{Ray, Range};
+use crate::objects::{Object, Surfel};
 
 /// Core ray tracer
 pub struct RayTracer {
@@ -20,6 +22,13 @@ pub struct TraceResult {
     hit_count: u32,
     trace_sum: Duration,
     trace_max: Duration,
+}
+
+/// Trace context which can track per thread execution metrics
+#[derive(Copy, Clone)]
+pub struct TraceContext<'tracer> {
+    tracer: &'tracer RayTracer,
+    pub result: TraceResult
 }
 
 impl TraceResult {
@@ -58,13 +67,6 @@ impl TraceResult {
     }
 }
 
-/// Trace context which can track per thread execution metrics
-#[derive(Copy, Clone)]
-pub struct TraceContext<'tracer> {
-    tracer: &'tracer RayTracer,
-    pub result: TraceResult
-}
-
 impl<'tracer> TraceContext<'tracer> {
     pub fn new(tracer: &'tracer RayTracer) -> Self {
        TraceContext{tracer, result: TraceResult::new()}
@@ -83,7 +85,7 @@ impl<'tracer> TraceContext<'tracer> {
     fn trace_ray(&mut self, ray: &Ray) -> ColorRGB {
         self.result.ray_count += 1;
         let start = Instant::now();
-        let (color, hit) = self.tracer.trace_ray(ray);
+        let (color, hit) = self.tracer.sample_ray(ray);
         let stop = Instant::now();
         let delta = stop - start;
         self.result.trace_sum += delta;
@@ -102,7 +104,7 @@ impl RayTracer {
                   objects}
     }
 
-    fn trace_ray(&self, ray: &Ray) -> (ColorRGB, bool) {
+    fn trace_ray(&self, ray: &Ray) -> Option<Surfel> {
         let mut range = Range{ min: 1e-6, max: f32::MAX };
         let mut surfel = None;
 
@@ -112,6 +114,12 @@ impl RayTracer {
                     surfel = Some(surf);
             } 
         }
+        surfel
+    }
+
+    fn sample_ray(&self, ray: &Ray) -> (ColorRGB, bool) {
+
+        let surfel = self.trace_ray(ray);
 
         match surfel {
             Some(surf) => {
@@ -120,7 +128,7 @@ impl RayTracer {
                 let ambient = self.scene.ambient() * material.ka * material.ambient;
 
                 for light in self.scene.lights().iter() {
-                    color += phong_shade(light, &self.camera.eye, &surf, material);
+                    color += phong_shade(light.deref(), &self.camera.eye, &surf, material);
                 }
 
                 color += ambient;
@@ -132,18 +140,3 @@ impl RayTracer {
     }
 }
 
-fn phong_shade<T: Light>(light: &T, eye: &Vec3, surfel: &Surfel, material: &Material) -> ColorRGB {
-    let n = surfel.normal;
-    let l = normalize(light.direction_from(surfel.hit_point)); // from P to light
-    let v = normalize(*eye - surfel.hit_point);  // from P to viewer
-    let n_dot_l = dot(n, l).max(0.0_f32);
-    let r = normalize((2.0_f32 * n_dot_l * n) - l);
-    let r_dot_v = dot(r, v).max(0.0_f32);
-
-    let exp = r_dot_v.powf(material.shininess);
-    let il = light.intensity_at(l); // for spot lights
-    let diffuse = il * light.diffuse() * material.kd * material.diffuse * n_dot_l;
-    let specular = il * light.specular() * material.ks * material.specular * exp;
-
-    diffuse + specular
-}

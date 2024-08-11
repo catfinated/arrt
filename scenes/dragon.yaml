@@ -104,20 +104,21 @@ objects:
           - 0.0 
       material: gold
 lights:
-  - position:
-      - 1.0
-      - 4.0
-      - 6.0
-    ambient:
-      r: 0.0
-      g: 0.0
-      b: 0.0
-    diffuse:
-      r: 1.0
-      g: 1.0
-      b: 1.0
-    specular:
-      r: 1.0
-      g: 1.0
-      b: 1.0
+  - !Point
+      position:
+        - 1.0
+        - 4.0
+        - 6.0
+      ambient:
+        r: 0.0
+        g: 0.0
+        b: 0.0
+      diffuse:
+        r: 1.0
+        g: 1.0
+        b: 1.0
+      specular:
+        r: 1.0
+        g: 1.0
+        b: 1.0
 

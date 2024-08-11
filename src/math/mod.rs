@@ -16,7 +16,7 @@ use serde::{Serialize, Deserialize};
 
 const PI_OVER_ONE_EIGHTY : f32 = std::f32::consts::PI / 180.0_f32;
 
-#[derive(Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Degree(pub f32);
 pub struct Radian(pub f32);
 
