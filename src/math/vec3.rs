@@ -168,3 +168,9 @@ pub fn cross(v: Vec3, u: Vec3) -> Vec3 {
     let z = v.x() * u.y() - v.y() * u.x();
     Vec3::new(x, y, z)
 }
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3
+{
+    let r = 2.0_f32 * dot(n, v) * n - v;
+    normalize(r)
+}

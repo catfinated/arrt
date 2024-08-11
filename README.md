@@ -19,12 +19,15 @@ This ray tracer is exteremly basic right now but the following features are incl
 
 Here are some examples of what it can currently prodcue:
 
-![Example 1](docs/scene.png)
-![Example 2](docs/bunnies.png)
-![Example 3](docs/cows.png)
-![Example 4](docs/cow2.png)
+|                               |                                 |
+| ----------------------------- | ------------------------------- |
+| ![Example 1](docs/scene.png)  | ![Example 2](docs/bunnies.png)  |
+| ![Example 3](docs/cow.png)    | ![Example 4](docs/cow2.png)     |
+| ![Example 5](docs/dragon.png) |                                 |
+
 
 ## TODO
 
-* reflections and refractions
+* refractions
+* area lights
 * bezeir pathes/curves

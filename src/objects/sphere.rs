@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::math::*;
+use crate::math::{Ray, Range, Vec3, dot, normalize, in_range};
 
 use super::material::{Surfel, MaterialID};
 use super::object::Object;
@@ -51,10 +51,10 @@ impl Object for Sphere {
     }
 
     fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
-        let a = sum(square(ray.direction));
+        let a = dot(ray.direction, ray.direction);
         let v = ray.origin - self.center;
-        let b = 2.0_f32 * sum(ray.direction * v);
-        let c = sum(square(v)) - (self.radius * self.radius);
+        let b = 2.0_f32 * dot(ray.direction, v);
+        let c = dot(v, v) - (self.radius * self.radius);
         let discriminant = (b * b) - (4.0_f32 * a * c);
 
         if discriminant < 0.0_f32 {

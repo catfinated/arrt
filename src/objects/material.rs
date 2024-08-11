@@ -19,6 +19,7 @@ pub struct Material {
     pub ka: f32,
     pub kd: f32,
     pub ks: f32,
+    pub kr: f32,
     pub shininess: f32,
 }
 
@@ -46,6 +47,7 @@ impl Default for Material {
                ka: 1.0_f32,
                kd: 1.0_f32,
                ks: 1.0_f32,
+               kr: 0.0_f32,
                shininess: 1.0_f32 }
     }
 }

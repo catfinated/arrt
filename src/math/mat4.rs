@@ -105,8 +105,8 @@ impl Mat4 {
         let ct = theta.cos();
         let st = theta.sin();
         m.dat[0] = ct;
-        m.dat[2] = -st;
-        m.dat[8] = st;
+        m.dat[2] = st;
+        m.dat[8] = -st;
         m.dat[10] = ct;
         m
     }
@@ -117,8 +117,8 @@ impl Mat4 {
         let ct = theta.cos();
         let st = theta.sin();
         m.dat[0] = ct;
-        m.dat[2] = st;
-        m.dat[8] = -st;
+        m.dat[2] = -st;
+        m.dat[8] = st;
         m.dat[10] = ct;
         m
     }

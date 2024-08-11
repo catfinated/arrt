@@ -26,7 +26,7 @@ camera:
 objects:
   - !Model
       mesh: models/dragon-50000.smf
-      material: gold
+      material: gold2
       transform:
         translate:
           - 0.0
@@ -74,7 +74,7 @@ objects:
           - 2.0
   - !Sphere 
       radius: 0.8
-      material: orange
+      material: reflective_orange
       center: 
           - 2.4
           - 1.4
@@ -102,7 +102,7 @@ objects:
           - 0.0
           - 1.0
           - 0.0 
-      material: gold
+      material: gold2
 lights:
   - !Point
       position:
