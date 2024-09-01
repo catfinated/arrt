@@ -16,11 +16,15 @@ pub struct Material {
     pub ambient: ColorRGB,
     pub diffuse: ColorRGB,
     pub specular: ColorRGB,
+    pub transmissive: ColorRGB,
     pub ka: f32,
     pub kd: f32,
     pub ks: f32,
     pub kr: f32,
+    pub kt: f32,
+    pub ior: f32,
     pub shininess: f32,
+    pub highlight: f32,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -36,6 +40,7 @@ pub struct Surfel {
     pub hit_point: Vec3,
     pub normal: Vec3,
     pub material_id: MaterialID,
+    pub n_offset: f32,
 }
 
 impl Default for Material {
@@ -44,11 +49,15 @@ impl Default for Material {
                ambient: ColorRGB::black(),
                diffuse: ColorRGB::black(),
                specular: ColorRGB::black(),
+               transmissive: ColorRGB::black(),
                ka: 1.0_f32,
                kd: 1.0_f32,
                ks: 1.0_f32,
                kr: 0.0_f32,
-               shininess: 1.0_f32 }
+               kt: 0.0_f32,
+               ior: 0.0_f32,
+               shininess: 1.0_f32,
+               highlight: 0.0_f32, }
     }
 }
 
@@ -57,6 +66,10 @@ impl MaterialMap {
         println!("loading materials from: {:#?}", fpath);
         let inf = File::open(fpath).unwrap();
         let materials: Vec<Material> =  serde_yaml::from_reader(&inf).unwrap();
+
+        for mat in &materials {
+            println!("{:?}", mat);
+        }
 
         let mut name_to_id = HashMap::new();
         for (i, mat) in materials.iter().enumerate() {

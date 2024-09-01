@@ -132,7 +132,10 @@
     r: 0.633
     g: 0.729
     b: 0.633
-  shininess: 2
+  shininess: 76
+  ks: 0.5
+  ka: 1.0
+  kd: 0.5
   kr: 0.0
 - name: gold
   ambient:
@@ -149,6 +152,24 @@
     b: 0.366
   shininess: 32
 - name: gold2
+  ambient:
+    r: 0.247
+    g: 0.200
+    b: 0.075
+  diffuse:
+    r: 0.752
+    g: 0.606
+    b: 0.226
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  shininess: 5
+  ka: 0.1
+  kd: 0.9
+  ks: 0.0
+  kr: 0.0 #0.75
+- name: gold_r
   ambient:
     r: 0.247
     g: 0.200
@@ -260,3 +281,145 @@
   ks: 1.0
   kr: 0.5
   shininess: 25
+- name: glass
+  ambient:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  diffuse:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  transmissive:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  ka: 0.0
+  kd: 0.0
+  ks: 0.1
+  kr: 0.0
+  kt: 0.9
+  ior: 1.52
+  shininess: 1000
+  highlight: 100
+- name: glass2
+  ambient:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  diffuse:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  transmissive:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  ka: 0.0
+  kd: 0.0
+  ks: 0.1
+  kr: 0.6
+  kt: 0.9
+  ior: 1.52
+  shininess: 2000
+  highlight: 1000  
+- name: diamond
+  ambient:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  diffuse:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  transmissive:
+    r: 1.0
+    g: 1.0
+    b: 1.0   
+  ka: 0.0
+  kd: 0.0
+  ks: 0.1
+  kr: 0.6
+  kt: 0.9
+  ior: 2.42
+  shininess: 2000
+  highlight: 1000
+- name: bubble
+  ambient:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  diffuse:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  transmissive:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  ka: 0.0
+  kd: 0.0
+  ks: 0.5
+  kr: 0.8
+  kt: 0.9
+  ior: 0.75
+  shininess: 2000
+  highlight: 1000
+- name: water
+  ambient:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  diffuse:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  transmissive:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  ka: 0.0
+  kd: 0.0
+  ks: 0.5
+  kr: 0.1
+  kt: 0.9
+  ior: 1.33
+  shininess: 100
+  highlight: 2
+- name: reflective_blue
+  ambient:
+    r: 0.0
+    g: 0.5
+    b: 0.75
+  diffuse:
+    r: 0.0
+    g: 0.5
+    b: 0.75
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  ka: 0.35
+  kd: 0.5
+  ks: 0.2
+  kr: 0.75

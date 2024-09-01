@@ -86,7 +86,7 @@ impl Triangle {
                      (gamma * normals[self.k]));
         let material_id = MaterialID(0);
 
-        Some(Surfel{t, hit_point, normal, material_id})
+        Some(Surfel{t, hit_point, normal, material_id, n_offset: 0.0_f32})
     }
 
 }

@@ -184,7 +184,7 @@ impl Object for ModelInstance {
     fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
         let o = (&self.inverse * Vec4::from_vec3(ray.origin, 1.0_f32)).to_vec3();
         let d = (&self.inverse * Vec4::from_vec3(ray.direction, 0.0_f32)).to_vec3();
-        let r = Ray{origin: o, direction: normalize(d)};
+        let r = Ray{origin: o, direction: normalize(d), depth: ray.depth};
         let mut surfel = None;
 
         if let Some(surf) = self.model.intersect(&r, range) {
@@ -199,7 +199,7 @@ impl Object for ModelInstance {
             let v4 = &it * Vec4::from_vec3(surf.normal, 0.0_f32);
             let normal = normalize(v4.to_vec3());
             let material_id = self.material_id;
-            surfel = Some(Surfel{t, hit_point, normal, material_id})
+            surfel = Some(Surfel{t, hit_point, normal, material_id, n_offset: 0.0000000001})
         }
         surfel
     }

@@ -76,7 +76,7 @@ impl Object for Sphere {
             let hit_point = ray.point_at(t);
             let normal = self.normal_at(hit_point);
 
-            return Some(Surfel{t, hit_point, normal, material_id: self.material_id});
+            return Some(Surfel{t, hit_point, normal, material_id: self.material_id, n_offset: 0.0001});
         }
 
         None

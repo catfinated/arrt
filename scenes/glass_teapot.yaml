@@ -1,7 +1,7 @@
 bgcolor:
   r: 0
   g: 0
-  b: 0.25
+  b: 0.2
 width: 512
 height: 512
 ambient:
@@ -12,7 +12,7 @@ camera:
   eye:
     - 0.0
     - 1.0
-    - 6.0
+    - 10.0
   up:
     - 0.0
     - 1.0
@@ -25,48 +25,52 @@ camera:
   fov: 60.0
 objects:
   - !Model
-      mesh: models/dragon-50000.smf
-      material: gold_r
+      mesh: models/teapot.smf
+      material: glass2
       transform:
         translate:
           - 0.0
-          - -1.0
           - 0.0
-        rotate:
-          - 0.0
-          - 180.0
-          - 0.0
-        scale:
-          - 3.0
-          - 3.0
-          - 3.0
-  - !Model
-      mesh: models/bound-bunny_5k.smf
-      material: silver
-      transform:
-        translate:
-          - 1.5
-          - 0.52
-          - 2.5
-        rotate:
-          - 0.0
-          - 180.0
-          - 0.0
-        scale:
-          - 0.6
-          - 0.6
-          - 0.6
+          - 2.0
   - !Model
       mesh: models/bound-bunny_1k.smf
-      material: shiny_yellow
+      material: emerald
       transform:
         translate:
-          - -2.5
+          - -4.0
           - 2.0
-          - -2.0
+          - -6.0
+        scale:
+          - 5.0
+          - 5.0
+          - 5.0
+  - !Model
+      mesh: models/bound-bunny_1k.smf
+      material: ruby
+      transform:
+        translate:
+          - 4.0
+          - 2.0
+          - -6.0
         rotate:
           - 0.0
-          - 15.0
+          - 180.0
+          - 0.0
+        scale:
+          - 5.0
+          - 5.0
+          - 5.0
+  - !Model
+      mesh: models/bound-cow.smf
+      material: diamond
+      transform:
+        translate:
+          - 1.0
+          - -0.4
+          - 6.0
+        rotate:
+          - 0.0
+          - 180.0
           - 0.0
         scale:
           - 2.0
@@ -74,25 +78,25 @@ objects:
           - 2.0
   - !Sphere 
       radius: 0.8
-      material: reflective_orange
+      material: reflective_blue
       center: 
-          - 2.4
-          - 1.4
-          - -1.1
+          - 1.5
+          - -0.2
+          - 4.0
   - !Sphere 
-      radius: 0.3
-      material: shiny_blue
+      radius: 0.6
+      material: glass2
       center: 
           - -1.0
-          - 0.6
-          - 3.0
+          - -0.4
+          - 4.0
   - !Sphere 
-      radius: 0.9
-      material: mauve
+      radius: 0.5
+      material: bubble
       center: 
-          - -0.75
-          - 3.5
-          - -4.0
+          - -1.7
+          - 0.0
+          - 6.0
   - !Plane 
       point: 
           - 0.0
@@ -102,11 +106,11 @@ objects:
           - 0.0
           - 1.0
           - 0.0 
-      material: gold_r
+      material: gold2
 lights:
   - !Point
       position:
-        - 1.0
+        - -1.0
         - 4.0
         - 6.0
       ambient:
@@ -121,4 +125,3 @@ lights:
         r: 1.0
         g: 1.0
         b: 1.0
-

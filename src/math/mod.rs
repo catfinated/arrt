@@ -7,7 +7,7 @@ pub mod ray;
 
 pub use range::{Range, in_range};
 pub use ray::Ray;
-pub use vec3::{Vec3, normalize, cross, dot, reflect};
+pub use vec3::{Vec3, normalize, cross, dot, reflect, refract};
 pub use vec4::Vec4;
 pub use mat3::{Mat3, determinant};
 pub use mat4::Mat4;

@@ -4,7 +4,7 @@ use std::time::{Instant, Duration};
 use super::{ColorRGB, XYCoord};
 
 use crate::scene::{Camera, Scene};
-use crate::math::{Ray, Range, normalize, dot, reflect};
+use crate::math::{Ray, Range, normalize, dot, reflect, refract};
 use crate::objects::{Object, Surfel, Material};
 
 /// Core ray tracer
@@ -83,7 +83,7 @@ impl<'tracer> TraceContext<'tracer> {
     fn trace_ray(&mut self, ray: &Ray) -> ColorRGB {
         self.result.ray_count += 1;
         let start = Instant::now();
-        let (color, hit) = self.tracer.sample_ray(ray, 0);
+        let (color, hit) = self.tracer.sample_ray(ray);
         let stop = Instant::now();
         let delta = stop - start;
         self.result.trace_sum += delta;
@@ -103,7 +103,7 @@ impl RayTracer {
     }
 
     fn trace_ray(&self, ray: &Ray) -> Option<Surfel> {
-        let mut range = Range{ min: 1e-6, max: f32::MAX };
+        let mut range = Range{ min: 0.025, max: f32::MAX };
         let mut surfel = None;
 
         for object in &self.objects {
@@ -115,18 +115,19 @@ impl RayTracer {
         surfel
     }
 
-    pub fn sample_ray(&self, ray: &Ray, curr_depth: u32) -> (ColorRGB, bool) {
+    pub fn sample_ray(&self, ray: &Ray) -> (ColorRGB, bool) {
 
         let max_depth = 5_u32;
         let surfel = self.trace_ray(ray);
 
+        if ray.depth > max_depth {
+            return (ColorRGB::black(), false);
+        }
+
         match surfel {
             Some(surf) => {
-                if curr_depth > max_depth {
-                    return (ColorRGB::black(), false);
-                }
                 let material = self.scene.material_for_surfel(&surf);
-                let color = self.shade(&surf, material, curr_depth);
+                let color = self.shade(&surf, material, ray.depth);
                 (color, true)
             }
             None => { (self.scene.bgcolor(), false) }
@@ -135,16 +136,22 @@ impl RayTracer {
 
     /// Calculate light intensity due to shadowing
     fn shadow_intensity(&self, ray: &Ray, light_intensity: f32) -> f32 {
-        let range = Range{min: 0.001_f32, max: f32::MAX};
+        let mut range = Range{min: 0.001_f32, max: f32::MAX};
+        let mut intensity = light_intensity;
 
         for object in &self.objects {
-            // todo: transmissive materials
-            if object.intersect(ray, range).is_some() {
-                return 0.0_f32;
+            if let Some(surf) = object.intersect(ray, range) {
+                let material = self.scene.material_for_surfel(&surf);
+                if material.kt > 0.0_f32 {
+                    intensity *= 0.5;
+                    range.min = surf.t;
+                } else {   
+                    return 0.0_f32;
+                }
             } 
         }
 
-        light_intensity
+        intensity
     }
 
     /// Apply shading to the given surface and material
@@ -156,21 +163,25 @@ impl RayTracer {
 
         let mut color = ColorRGB::black();
 
-        let n = surfel.normal;
+        let mut n = normalize(surfel.normal);
         let v = normalize(self.camera.eye - surfel.hit_point); // from P to viewer
+        let mut visible_lights = Vec::new();
 
         for light in self.scene.lights().iter() {
             let l = normalize(light.direction_from(surfel.hit_point)); // from P to light
             let mut intensity = light.intensity_at(l); // for spot lights
 
+            // shadows
             if dot(n, l) > 0.0_f32 { // hit pint faces towards light
-                let ray = Ray{origin: surfel.hit_point + (0.01_f32 *n), direction: l};
+                let ray = Ray{origin: surfel.hit_point + (0.01_f32 *n), direction: l, depth: curr_depth};
                 intensity = self.shadow_intensity(&ray, intensity);
             }
 
             if intensity == 0.0_f32 {
                 continue;
             }
+
+            visible_lights.push(light.clone());
 
             let n_dot_l = dot(n, l).max(0.0_f32);
             let h = normalize(l + v);
@@ -189,19 +200,61 @@ impl RayTracer {
             color += diffuse + specular;
         }
 
+        // reflections
         let mut reflected_color = ColorRGB::black();
 
         if material.kr > 0.0_f32 { // material is reflective
-            let n_offset = 0.0001_f32;
             let r = reflect(v, n);
-            let reflected = Ray{origin: surfel.hit_point + (n_offset * n), direction: r};
-            let reflected_intensity = self.sample_ray(&reflected, curr_depth + 1).0;
+            let reflected = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: r, depth: curr_depth + 1};
+            let reflected_intensity = self.sample_ray(&reflected).0;
             // specular reflection from other surfaces
             // + kr * Ir * Cs
             reflected_color += material.kr * reflected_intensity * material.specular;
             color += reflected_color;
         }
 
+        // refractions
+        if material.kt > 0.0_f32 {
+            let mut eta = material.ior;
+            let mut cos_theta_i = dot(n, v);
+
+            if cos_theta_i < 0.0_f32 {
+                cos_theta_i = -cos_theta_i;
+                n = normalize(-n);
+                eta = 1.0_f32 / eta;
+            }
+
+            if let Some(t) = refract(&v, &n, cos_theta_i, eta) {
+                let transmitted = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: t, depth: curr_depth + 1};
+                let it = self.sample_ray(&transmitted).0;
+                color += material.kt * it * material.transmissive;
+
+                for light in &visible_lights {
+                    let l = normalize(light.direction_from(surfel.hit_point));
+                    let cos_alpha = dot(t, l).max(0.0_f32);
+                    let f = cos_alpha.powf(material.highlight);
+                    let il = light.intensity_at(l);
+                    color += material.kt * il * light.specular() * material.transmissive * f;
+                }
+   
+            } else {
+                // option 1 - return reflective color
+                //let it = reflected_color;
+
+                // option 2 - shot an internal reflect ray
+                let r = reflect(v, n);
+                let ray = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: r, depth: curr_depth + 1};
+
+                // option 3 - make T = -V
+                //let ray = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: -v, depth: curr_depth + 1};
+
+                // 2 or 3
+                let it = self.sample_ray(&ray).0;
+                color += material.kt * it * material.transmissive;
+            }
+        }
+
+        // ambient lighting
         let ambient = self.scene.ambient() * material.ka * material.ambient;
         color += ambient;
         color.clamp(0.0_f32, 1.0_f32)

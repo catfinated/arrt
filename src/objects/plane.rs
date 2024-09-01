@@ -49,31 +49,11 @@ impl Object for Plane {
                 if ndotrd > 0.0_f32 {
                     normal = -normal;
                 }
-                surf = Some(Surfel{t, hit_point, normal, material_id: self.material_id});
+                surf = Some(Surfel{t, hit_point, normal, material_id: self.material_id, n_offset: 0.0_f32});
 
             }
         }
         surf
 
-        /*
-            float_t NdotRd = dot(normal_, ray.direction());
-
-    if (NdotRd != 0.0f) {
-        float_t NdotRo = dot(normal_, ray.origin());
-        float_t NdotP = dot(normal_, point_);
-        float_t t = -(NdotRo - NdotP) / NdotRd; //dot((point_ - ray.origin()), normal_) / d;
-
-        if (in_range(trange, t)) {
-            surfel.t = t;
-            surfel.hit_point = ray.point_at(t);
-            surfel.normal = (NdotRd > 0.0f) ? -normal_ : normal_;
-            surfel.material = material();
-            surfel.object = this;
-            return true;
-        }
-    }
-
-    return false;
-         */
     }
 }

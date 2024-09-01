@@ -68,6 +68,6 @@ impl Camera {
             self.sk * (kf / (self.vres - 1.0_f32)) * self.yv) -
             self.eye;
 
-        Ray{origin: self.eye, direction: normalize(v)}
+        Ray{origin: self.eye, direction: normalize(v), depth: 0}
     }
 }

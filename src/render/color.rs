@@ -22,23 +22,35 @@ pub struct ColorRGB {
 }
 
 impl ColorRGB {
-    pub fn new(r: f32, g: f32, b: f32) -> ColorRGB {
+    pub fn new(r: f32, g: f32, b: f32) -> Self {
         ColorRGB{ r, g, b }
     }
 
-    pub fn fill(val: f32) -> ColorRGB {
+    pub fn fill(val: f32) -> Self {
         ColorRGB::new(val, val, val )
     }
 
-    pub fn black() -> ColorRGB {
+    pub fn black() -> Self {
         ColorRGB::fill(0.0_f32)
     }
 
-    pub fn white() -> ColorRGB {
+    pub fn white() -> Self {
         ColorRGB::fill(1.0_f32)
     }
 
-    pub fn clamp(&self, lo: f32, hi: f32) -> ColorRGB {
+    pub fn red() -> Self {
+        ColorRGB::new(1.0_f32, 0.0_f32, 0.0_f32)
+    }
+
+    pub fn green() -> Self {
+        ColorRGB::new(0.0_f32, 1.0_f32, 0.0_f32)
+    }
+
+    pub fn blue() -> Self {
+        ColorRGB::new(0.0_f32, 0.0_f32, 1.0_f32)
+    }
+
+    pub fn clamp(&self, lo: f32, hi: f32) -> Self {
         ColorRGB{ r: clamp(self.r, lo, hi),
                   g: clamp(self.g, lo, hi),
                   b: clamp(self.b, lo, hi) }

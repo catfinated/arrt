@@ -169,8 +169,20 @@ pub fn cross(v: Vec3, u: Vec3) -> Vec3 {
     Vec3::new(x, y, z)
 }
 
-pub fn reflect(v: Vec3, n: Vec3) -> Vec3
-{
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     let r = 2.0_f32 * dot(n, v) * n - v;
     normalize(r)
+}
+
+pub fn refract(v: &Vec3, n: &Vec3, cos_theta_i: f32, eta: f32) -> Option<Vec3> {
+    let f  = 1.0_f32 - (1.0_f32 - (cos_theta_i * cos_theta_i)) / (eta * eta);
+    let mut result = None;
+
+    if f >= 0.0_f32 {
+        let wt = -(*v) / eta - (f.sqrt() - cos_theta_i / eta) * *n;
+        result = Some(normalize(wt))
+    }
+
+    // total internal reflection !!
+    result
 }
