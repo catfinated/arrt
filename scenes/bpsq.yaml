@@ -1,0 +1,182 @@
+bgcolor:
+  r: 0
+  g: 0
+  b: 0.2
+width: 512
+height: 512
+ambient:
+  r: 1.0
+  g: 1.0
+  b: 1.0
+camera:
+  eye:
+    - 0.0
+    - 1.0
+    - 10.0
+  up:
+    - 0.0
+    - 1.0
+    - 0.0
+  look_at:
+    - 0.0
+    - 0.0
+    - 0.0
+  dist: 1.0
+  fov: 60.0
+objects:
+  - !SuperQuadric
+      a: 
+        - 1.0
+        - 1.0
+        - 1.0
+      e1: 0.2
+      e2: 1.0
+      vslices: 150
+      hslices: 100
+      material: ruby
+      transform:
+        scale: 
+          - 1.5
+          - 1.5
+          - 1.5
+        translate:
+          - -0.5
+          - 0.5
+          - -2.0
+  - !SuperQuadric
+      a: 
+        - 1.0
+        - 1.0
+        - 1.0
+      e1: 1.0
+      e2: 3.0
+      vslices: 150
+      hslices: 100
+      material: emerald
+      transform:
+        scale: 
+          - 0.9
+          - 0.9
+          - 0.9
+        translate:
+          - 3.0
+          - 3.0
+          - 0.0
+        rotate:
+          - 90.0
+          - 45.0
+          - 0.0
+  - !SuperQuadric
+      a: 
+        - 1.0
+        - 1.0
+        - 1.0
+      e1: 3.0
+      e2: 0.2
+      vslices: 150
+      hslices: 100
+      material: silver
+      transform:
+        scale: 
+          - 0.8
+          - 0.8
+          - 0.8
+        translate:
+          - -3.0
+          - 3.0
+          - 1.0
+        rotate:
+          - 45.0
+          - 45.0
+          - 0.0
+  - !BPatch
+      fpath: patches/teacup.bpt
+      material: bronze
+      slices: 32
+      flip_normals: false
+      transform: 
+        translate:
+          - -1.0
+          - -1.0
+          - 5.0
+  - !BPatch
+      fpath: patches/teapotCGA.bpt
+      material: turquoise
+      slices: 32
+      flip_normals: true
+      transform: 
+        translate:
+          - 2.0
+          - 0.5
+          - 3.0
+        rotate:
+          - -90.0
+          - 0.0
+          - 0.0
+        scale:
+          - 0.3
+          - 0.3
+          - 0.3
+  - !BPatch
+      fpath: patches/teaspoon.bpt
+      material: ruby
+      slices: 32
+      flip_normals: false
+      transform: 
+        translate:
+          - 1.0
+          - -0.75
+          - 3.0
+        rotate:
+          - -85.0
+          - 0.0
+          - 10.0
+        scale:
+          - 2.0
+          - 2.0
+          - 2.0         
+  - !Plane 
+      point: 
+        - 0.0
+        - -1.0
+        - 0.0
+      normal:
+        - 0.0
+        - 1.0
+        - 0.0 
+      material: gold2
+lights:
+  - !Point
+      position:
+        - 1.0
+        - 10.0
+        - 10.0
+      ambient:
+        r: 0.0
+        g: 0.0
+        b: 0.0
+      diffuse:
+        r: 1.0
+        g: 1.0
+        b: 1.0
+      specular:
+        r: 1.0
+        g: 1.0
+        b: 1.0
+  - !Point
+      position:
+        - 2.0
+        - 2.0
+        - 6.0
+      ambient:
+        r: 0.0
+        g: 0.0
+        b: 0.0
+      diffuse:
+        r: 1.0
+        g: 1.0
+        b: 1.0
+      specular:
+        r: 1.0
+        g: 1.0
+        b: 1.0

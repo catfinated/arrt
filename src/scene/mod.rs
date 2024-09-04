@@ -11,7 +11,7 @@ use std::sync::Arc;
 use serde::{Serialize, Deserialize};
 
 use crate::render::ColorRGB;
-use crate::objects::{MaterialMap, Object, Sphere, Model, ModelInstance, Bvh, Surfel, Material, Plane};
+use crate::objects::{bpatch, superquadric, Bvh, Material, MaterialMap, Mesh, Instance, Object, Plane, Sphere, Surfel};
 use crate::lights::{Light, PointLight, SpotLight};
 
 use camera::CameraConfig;
@@ -27,6 +27,8 @@ struct SceneConfig {
     height: u32,
     #[serde(default)]
     mesh_dir: String,
+    #[serde(default)]
+    patch_dir: String,    
     #[serde(default = "ColorRGB::white")]
     ambient: ColorRGB,
     camera: CameraConfig,
@@ -69,7 +71,8 @@ impl Scene {
         let mut all_objs: Vec<Arc<dyn Object>> = Vec::new();
         let mut bounded_objs: Vec<Arc<dyn Object>> = Vec::new();
         let mesh_dir = &self.config.mesh_dir;
-        let mut models = HashMap::new();
+        let patch_dir = &self.config.patch_dir;
+        let mut meshes = HashMap::new();
 
         for obj in &self.config.objects {
             match obj {
@@ -78,14 +81,24 @@ impl Scene {
                 }
                 ObjectConfig::Model(m) => {
                     let material_id = self.materials_map.get_material_id(&m.material);
-                    let model: &Arc<Model> = models.entry(m.mesh.clone())
-                    .or_insert_with(|| Arc::new(Model::new(&m.mesh, mesh_dir, material_id)));
-                    bounded_objs.push(Arc::new(ModelInstance::new(model.clone(),
+                    let mesh: &Arc<Mesh> = meshes.entry(m.mesh.clone())
+                    .or_insert_with(|| Arc::new(Mesh::fromSMF(&m.mesh, mesh_dir)));
+                    bounded_objs.push(Arc::new(Instance::new(mesh.clone(),
                                                        material_id,
                                                        &m.transform)));
                 },
                 ObjectConfig::Plane(p) => {
                     all_objs.push(Arc::new(Plane::new(p, self.materials_map.get_material_id(&p.material))));
+                },
+                ObjectConfig::SuperQuadric(sqc) => {
+                    let material_id = self.materials_map.get_material_id(&sqc.material);
+                    let se = Arc::new(superquadric::tessellate_superquadric(sqc));
+                    bounded_objs.push(Arc::new(Instance::new(se, material_id, &sqc.transform)));
+                },
+                ObjectConfig::BPatch(bpc) => {
+                    let material_id = self.materials_map.get_material_id(&bpc.material);
+                    let bp = Arc::new(bpatch::tessellate_bpatch(patch_dir, bpc));
+                    bounded_objs.push(Arc::new(Instance::new(bp, material_id, &bpc.transform)));
                 }
             }
         }

@@ -215,6 +215,7 @@
     g: 0.308
     b: 0.307
   shininess: 12
+  ks: 0.5
 - name: mauve
   ambient:
     r: 1.0
@@ -279,7 +280,7 @@
     g: 0.272
     b: 0.167
   ks: 1.0
-  kr: 0.5
+  kr: 0.0 #0.5
   shininess: 25
 - name: glass
   ambient:

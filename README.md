@@ -9,14 +9,19 @@ tracer I wrote many years ago in a grad school class where the curriculum was ba
 
 This ray tracer is exteremly basic right now but the following features are included:
 
-* Sphere, plane and simple model rendering
+* Triangle Meshes
+  * Simple Mesh Format
+  * Superquadrics
+  * Bezier Patches
+  * Instancing
+* Spheres and planes
 * Bounding volume hiearchy based on axis aligned bounding boxes
 * Phong/Hall shading with point and spot light sources
-* Shadows
+  * Shadows
+  * Reflection
+  * Refraction
 * Adaptive super sampling (1 - 2x)
 * Parallelized tracing and rendering with rayon
-* Model instancing
-* Reflected/Transmitted ray sampling
 
 Here are some examples of what it can currently prodcue:
 
@@ -25,11 +30,11 @@ Here are some examples of what it can currently prodcue:
 | ![Example 1](docs/scene.png)  | ![Example 2](docs/bunnies.png)      |
 | ![Example 3](docs/cow.png)    | ![Example 4](docs/cow2.png)         |
 | ![Example 5](docs/dragon.png) | ![Example 6](docs/glass_teapot.png) |
+| ![Example 7](docs/bpsq.png)   |                                     |
 
 
 ## TODO
 
 * area lights
-* bezeir pathes/curves
 * texture mapping
 * perlin noise
