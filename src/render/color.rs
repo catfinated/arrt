@@ -153,3 +153,63 @@ impl Div<f32> for ColorRGB {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn black_to_irgb() {
+        assert_eq!(ColorRGB::black().to_irgb(), [0, 0, 0]);
+    }
+
+    #[test]
+    fn white_to_irgb() {
+        assert_eq!(ColorRGB::white().to_irgb(), [255, 255, 255]);
+    }
+
+    #[test]
+    fn red_to_irgb() {
+        assert_eq!(ColorRGB::red().to_irgb(), [255, 0, 0]);
+    }
+
+    #[test]
+    fn clamp_above_one() {
+        let c = ColorRGB::new(2.0, 0.5, -0.5).clamp(0.0, 1.0);
+        assert!((c.r - 1.0).abs() < 1e-5);
+        assert!((c.g - 0.5).abs() < 1e-5);
+        assert!((c.b - 0.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn fill_sets_all_channels() {
+        let c = ColorRGB::fill(0.4);
+        assert!((c.r - 0.4).abs() < 1e-5);
+        assert!((c.g - 0.4).abs() < 1e-5);
+        assert!((c.b - 0.4).abs() < 1e-5);
+    }
+
+    #[test]
+    fn add_colors() {
+        let c = ColorRGB::new(0.2, 0.3, 0.4) + ColorRGB::new(0.1, 0.2, 0.1);
+        assert!((c.r - 0.3).abs() < 1e-5);
+        assert!((c.g - 0.5).abs() < 1e-5);
+        assert!((c.b - 0.5).abs() < 1e-5);
+    }
+
+    #[test]
+    fn scalar_mul() {
+        let c = ColorRGB::new(0.5, 0.25, 0.1) * 2.0;
+        assert!((c.r - 1.0).abs() < 1e-5);
+        assert!((c.g - 0.5).abs() < 1e-5);
+        assert!((c.b - 0.2).abs() < 1e-5);
+    }
+
+    #[test]
+    fn component_mul() {
+        let c = ColorRGB::new(0.5, 0.5, 0.5) * ColorRGB::new(0.5, 1.0, 0.0);
+        assert!((c.r - 0.25).abs() < 1e-5);
+        assert!((c.g - 0.5).abs() < 1e-5);
+        assert!((c.b - 0.0).abs() < 1e-5);
+    }
+}

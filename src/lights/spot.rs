@@ -41,3 +41,44 @@ impl Light for SpotLight {
         f.powf(self.sharpness)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::{normalize, Vec3};
+    use crate::render::ColorRGB;
+
+    fn downward_spot(angle_deg: f32) -> SpotLight {
+        SpotLight {
+            color: ColorRGB::white(),
+            position: Vec3::new(0.0, 5.0, 0.0),
+            direction: Vec3::new(0.0, -1.0, 0.0),
+            angle: Degree(angle_deg),
+            sharpness: 1.0,
+        }
+    }
+
+    #[test]
+    fn on_axis_intensity_is_one() {
+        let light = downward_spot(45.0);
+        // hit point directly below: direction_from → (0,5,0), normalized → (0,1,0)
+        let at = normalize(light.direction_from(Vec3::new(0.0, 0.0, 0.0)));
+        assert!((light.intensity_at(at) - 1.0).abs() < 1e-4);
+    }
+
+    #[test]
+    fn outside_cone_is_zero() {
+        let light = downward_spot(30.0);
+        // hit point far off-axis: angle to axis >> 30°
+        let at = normalize(light.direction_from(Vec3::new(10.0, 0.0, 0.0)));
+        assert_eq!(light.intensity_at(at), 0.0);
+    }
+
+    #[test]
+    fn inside_cone_is_positive() {
+        let light = downward_spot(60.0);
+        // hit point slightly off-axis: angle < 60°
+        let at = normalize(light.direction_from(Vec3::new(1.0, 0.0, 0.0)));
+        assert!(light.intensity_at(at) > 0.0);
+    }
+}

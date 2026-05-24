@@ -127,3 +127,78 @@ fn centroid_cmp(lhs: &dyn Object, rhs: &dyn Object, axis: usize) -> Ordering {
     let rhs_centroid = rhs.centroid();
     lhs_centroid[axis].partial_cmp(&rhs_centroid[axis]).unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::objects::material::MaterialID;
+    use crate::objects::sphere::{Sphere, SphereConfig};
+
+    fn make_sphere(center: Vec3, radius: f32) -> Arc<dyn Object> {
+        let cfg = SphereConfig {
+            center,
+            radius,
+            material: String::new(),
+        };
+        Arc::new(Sphere::new(&cfg, MaterialID(0)))
+    }
+
+    fn range() -> Range {
+        Range {
+            min: 0.001,
+            max: f32::MAX,
+        }
+    }
+
+    #[test]
+    fn single_sphere_hit() {
+        let bvh = Bvh::new(vec![make_sphere(Vec3::new(0.0, 0.0, 0.0), 1.0)], 0);
+        let ray = Ray {
+            origin: Vec3::new(0.0, 0.0, 5.0),
+            direction: Vec3::new(0.0, 0.0, -1.0),
+            depth: 0,
+        };
+        assert!(bvh.intersect(&ray, range()).is_some());
+    }
+
+    #[test]
+    fn single_sphere_miss() {
+        let bvh = Bvh::new(vec![make_sphere(Vec3::new(0.0, 0.0, 0.0), 1.0)], 0);
+        let ray = Ray {
+            origin: Vec3::new(5.0, 0.0, 5.0),
+            direction: Vec3::new(0.0, 0.0, -1.0),
+            depth: 0,
+        };
+        assert!(bvh.intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn two_spheres_returns_closer() {
+        // sphere at z=0 (t≈9.5 from ray origin) and z=3 (t≈6.5); closer one should win
+        let bvh = Bvh::new(
+            vec![
+                make_sphere(Vec3::new(0.0, 0.0, 0.0), 0.5),
+                make_sphere(Vec3::new(0.0, 0.0, 3.0), 0.5),
+            ],
+            0,
+        );
+        let ray = Ray {
+            origin: Vec3::new(0.0, 0.0, 10.0),
+            direction: Vec3::new(0.0, 0.0, -1.0),
+            depth: 0,
+        };
+        let surf = bvh.intersect(&ray, range()).unwrap();
+        assert!(surf.t > 6.0 && surf.t < 7.0);
+    }
+
+    #[test]
+    fn empty_bvh_always_misses() {
+        let bvh = Bvh::new(vec![], 0);
+        let ray = Ray {
+            origin: Vec3::new(0.0, 0.0, 5.0),
+            direction: Vec3::new(0.0, 0.0, -1.0),
+            depth: 0,
+        };
+        assert!(bvh.intersect(&ray, range()).is_none());
+    }
+}

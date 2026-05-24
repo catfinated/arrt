@@ -43,3 +43,46 @@ impl Default for Transform {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::{Vec3, Vec4};
+
+    fn apply(t: &Transform, v: Vec3) -> Vec3 {
+        (&t.mat4() * Vec4::from_vec3(v, 1.0)).to_vec3()
+    }
+
+    #[test]
+    fn default_transform_is_identity() {
+        let t = Transform::default();
+        let result = apply(&t, Vec3::new(1.0, 2.0, 3.0));
+        assert!((result.x() - 1.0).abs() < 1e-4);
+        assert!((result.y() - 2.0).abs() < 1e-4);
+        assert!((result.z() - 3.0).abs() < 1e-4);
+    }
+
+    #[test]
+    fn translate_moves_point() {
+        let t = Transform {
+            translate: Vec3::new(1.0, 2.0, 3.0),
+            ..Transform::default()
+        };
+        let result = apply(&t, Vec3::zeros());
+        assert!((result.x() - 1.0).abs() < 1e-4);
+        assert!((result.y() - 2.0).abs() < 1e-4);
+        assert!((result.z() - 3.0).abs() < 1e-4);
+    }
+
+    #[test]
+    fn scale_stretches_vector() {
+        let t = Transform {
+            scale: Vec3::new(2.0, 3.0, 4.0),
+            ..Transform::default()
+        };
+        let result = apply(&t, Vec3::new(1.0, 1.0, 1.0));
+        assert!((result.x() - 2.0).abs() < 1e-4);
+        assert!((result.y() - 3.0).abs() < 1e-4);
+        assert!((result.z() - 4.0).abs() < 1e-4);
+    }
+}

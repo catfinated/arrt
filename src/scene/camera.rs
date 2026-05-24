@@ -75,3 +75,54 @@ impl Camera {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::Vec3;
+
+    fn simple_camera() -> Camera {
+        let config = CameraConfig {
+            eye: Vec3::new(0.0, 0.0, 3.0),
+            up: Vec3::new(0.0, 1.0, 0.0),
+            look_at: Vec3::new(0.0, 0.0, 0.0),
+            dist: 1.0,
+            fov: Degree(60.0),
+        };
+        Camera::new(&config, 512.0, 512.0)
+    }
+
+    #[test]
+    fn center_ray_points_toward_scene() {
+        let cam = simple_camera();
+        let ray = cam.ray_at(255.5, 255.5);
+        assert!(ray.direction.z() < -0.99);
+    }
+
+    #[test]
+    fn ray_direction_is_normalized() {
+        let cam = simple_camera();
+        let ray = cam.ray_at(0.0, 0.0);
+        let len_sq = ray.direction.x() * ray.direction.x()
+            + ray.direction.y() * ray.direction.y()
+            + ray.direction.z() * ray.direction.z();
+        assert!((len_sq.sqrt() - 1.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn ray_origin_is_eye() {
+        let cam = simple_camera();
+        let ray = cam.ray_at(100.0, 200.0);
+        assert!((ray.origin.x() - 0.0).abs() < 1e-5);
+        assert!((ray.origin.y() - 0.0).abs() < 1e-5);
+        assert!((ray.origin.z() - 3.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn left_and_right_edge_rays_are_symmetric() {
+        let cam = simple_camera();
+        let left = cam.ray_at(0.0, 255.5);
+        let right = cam.ray_at(511.0, 255.5);
+        assert!((left.direction.x() + right.direction.x()).abs() < 1e-4);
+    }
+}
