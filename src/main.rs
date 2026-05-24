@@ -6,8 +6,9 @@ use arrt::args::CliArgs;
 use arrt::render::render_with_args;
 
 fn main() {
+    env_logger::init();
     let args = CliArgs::parse();
-    println!("cli args= {args:?}");
+    log::debug!("cli args= {args:?}");
     let framebuf = render_with_args(&args);
     let image = args
         .image

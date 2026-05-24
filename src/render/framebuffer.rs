@@ -53,7 +53,7 @@ impl Framebuffer {
         let srgb: Vec<u8> = self.data.par_iter().flat_map(ColorRGB::to_irgb).collect();
         writer.write_image_data(&srgb).unwrap();
         let stop = Instant::now();
-        println!("wrote {} in {:?}", path.display(), stop - start);
+        log::info!("wrote {} in {:?}", path.display(), stop - start);
     }
 
     pub fn set_color(&mut self, x: usize, y: usize, color: &ColorRGB) {

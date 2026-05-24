@@ -37,18 +37,18 @@ impl Camera {
 
         let top_left = config.eye + config.dist * zv + (sj / 2.0_f32) * xv + (sk / 2.0_f32) * yv;
 
-        println!("eye: {:?}", config.eye);
-        println!("zv:  {zv:?}");
-        println!("vup: {vup:?}");
-        println!("xv:  {xv:?}");
-        println!("yv:  {yv:?}");
-        println!("sj:  {sj}");
-        println!("sk:  {sk}");
-        println!("top left {top_left:?}");
-        println!("fov:   {}", config.fov.0);
-        println!("theta: {}", theta.0);
-        println!("h:     {h}");
-        println!("dist:  {}", config.dist);
+        log::debug!("eye: {:?}", config.eye);
+        log::debug!("zv:  {zv:?}");
+        log::debug!("vup: {vup:?}");
+        log::debug!("xv:  {xv:?}");
+        log::debug!("yv:  {yv:?}");
+        log::debug!("sj:  {sj}");
+        log::debug!("sk:  {sk}");
+        log::debug!("top left {top_left:?}");
+        log::debug!("fov:   {}", config.fov.0);
+        log::debug!("theta: {}", theta.0);
+        log::debug!("h:     {h}");
+        log::debug!("dist:  {}", config.dist);
 
         Camera {
             eye: config.eye,

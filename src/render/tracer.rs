@@ -61,9 +61,14 @@ impl TraceResult {
             hit_percent = (self.hit_count as f32 / self.ray_count as f32) * 100.0_f32;
             avg_trace = self.trace_sum / self.ray_count;
         }
-        println!(
+        log::info!(
             "ray count: {}, hit count: {}, hit %: {:.2}, sum: {:?}, avg: {:?}, max: {:?}",
-            self.ray_count, self.hit_count, hit_percent, self.trace_sum, avg_trace, self.trace_max
+            self.ray_count,
+            self.hit_count,
+            hit_percent,
+            self.trace_sum,
+            avg_trace,
+            self.trace_max
         );
     }
 }
@@ -98,7 +103,7 @@ impl<'tracer> TraceContext<'tracer> {
             self.result.trace_max = delta;
         }
         if hit {
-            self.result.hit_count += 1
+            self.result.hit_count += 1;
         }
         color
     }

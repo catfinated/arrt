@@ -32,7 +32,7 @@ impl Bvh {
         if objects.len() <= 1 {
             objects.shrink_to_fit();
             let bbox = compute_bbox(&objects);
-            println!(
+            log::debug!(
                 "added BVH leaf with {} objects. bbox: {:?}",
                 objects.len(),
                 bbox

@@ -119,7 +119,7 @@ impl Scene {
         }
 
         all_objs.push(Arc::new(Bvh::new(bounded_objs, 0)));
-        println!("all objects {}", all_objs.len());
+        log::info!("all objects {}", all_objs.len());
         all_objs
     }
 

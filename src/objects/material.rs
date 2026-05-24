@@ -63,12 +63,12 @@ impl Default for Material {
 
 impl MaterialMap {
     pub fn new(fpath: &PathBuf) -> MaterialMap {
-        println!("loading materials from: {}", fpath.display());
+        log::info!("loading materials from: {}", fpath.display());
         let inf = File::open(fpath).unwrap();
         let materials: Vec<Material> = serde_yml::from_reader(&inf).unwrap();
 
         for mat in &materials {
-            println!("{mat:?}");
+            log::debug!("{mat:?}");
         }
 
         let mut name_to_id = HashMap::new();

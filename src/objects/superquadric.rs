@@ -83,7 +83,7 @@ fn compute_normal(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3 {
 }
 
 pub fn tessellate_superquadric(config: &SuperQuadricConfig) -> Mesh {
-    println!("Tessellating super quadric {config:?}");
+    log::info!("Tessellating super quadric {config:?}");
     let inverse_a = Vec3::new(
         1.0_f32 / config.a.x(),
         1.0_f32 / config.a.y(),
@@ -184,7 +184,7 @@ pub fn tessellate_superquadric(config: &SuperQuadricConfig) -> Mesh {
     }
 
     let bbox = Aabb::new(box_min, box_max);
-    println!("ellipsoid bbox: {bbox:?}");
+    log::debug!("ellipsoid bbox: {bbox:?}");
     Mesh {
         vertices,
         triangles,

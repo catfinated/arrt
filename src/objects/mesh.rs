@@ -163,7 +163,7 @@ impl Mesh {
         let mut triangles = Vec::new();
         let mut normals = Vec::new();
         let path = Path::new(dpath).join(fpath);
-        println!("loading model mesh from: {}", path.display());
+        log::info!("loading model mesh from: {}", path.display());
 
         let file = match File::open(&path) {
             Err(why) => panic!("failed to open {}: {}", path.display(), why),
@@ -219,7 +219,7 @@ impl Mesh {
         }
 
         let bbox = Aabb::new(box_min, box_max);
-        println!("mesh bbox: {bbox:?}");
+        log::debug!("mesh bbox: {bbox:?}");
         Mesh {
             vertices,
             triangles,
@@ -258,7 +258,7 @@ impl Instance {
         let transform = transformations.mat4();
         let inverse = transformations.inverse();
         let bbox = model.bbox.transform(&transform);
-        println!("instance bbox: {:?} center: {:?}", bbox, bbox.center());
+        log::debug!("instance bbox: {:?} center: {:?}", bbox, bbox.center());
         Instance {
             model,
             material_id,

@@ -33,7 +33,7 @@ impl Default for Patch {
 }
 
 fn read_bpt(fpath: &Path) -> Vec<Patch> {
-    println!("loading patch from: {}", fpath.display());
+    log::info!("loading patch from: {}", fpath.display());
 
     let file = match File::open(fpath) {
         Err(why) => panic!("failed to open {}: {}", fpath.display(), why),
@@ -141,7 +141,7 @@ pub fn tessellate_bpatch(dpath: &String, config: &BPatchConfig) -> Mesh {
 
     let bbox = Aabb::new(box_min, box_max);
     let normals = compute_normals(&vertices, &triangles, config.flip_normals);
-    println!("bpatch bbox: {bbox:?}");
+    log::debug!("bpatch bbox: {bbox:?}");
     Mesh {
         vertices,
         triangles,

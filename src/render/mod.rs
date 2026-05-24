@@ -27,7 +27,7 @@ pub struct XYCoord {
 }
 
 pub fn render_scene(scene: Scene, anti_aliasing_depth: u8) -> Framebuffer {
-    println!(
+    log::info!(
         "bg color {:?} num threads {}",
         scene.bgcolor(),
         current_num_threads()
@@ -36,7 +36,7 @@ pub fn render_scene(scene: Scene, anti_aliasing_depth: u8) -> Framebuffer {
     let mut fb = Framebuffer::new(scene.width() as usize, scene.height() as usize);
     let tracer = RayTracer::new(scene);
     let setup_end = Instant::now();
-    println!("setup time: {:?}", setup_end - setup_start);
+    log::info!("setup time: {:?}", setup_end - setup_start);
 
     let begin = Instant::now();
     let result = fb
@@ -80,8 +80,8 @@ pub fn render_scene(scene: Scene, anti_aliasing_depth: u8) -> Framebuffer {
 
     result.print_stats();
     result2.print_stats();
-    println!("total tracing time: {:?}", trace_end - begin);
-    println!("total render time: {:?}", render_end - begin);
+    log::info!("total tracing time: {:?}", trace_end - begin);
+    log::info!("total render time: {:?}", render_end - begin);
     fb2
 }
 
