@@ -49,7 +49,7 @@ impl Scene {
         let mut mat_path = fpath.clone();
         mat_path.set_file_name("materials.yaml");
         let yaml = fs::read_to_string(fpath).unwrap();
-        let config: SceneConfig = serde_yaml::from_str(&yaml).unwrap();
+        let config: SceneConfig = serde_yml::from_str(&yaml).unwrap();
         let materials_map = MaterialMap::new(&mat_path);
         let mut lights: Vec<Arc<dyn Light>> = Vec::new();
 

@@ -1,0 +1,6 @@
+[build]
+
+[target.x86_64-unknown-linux-gnu]
+
+[alias]
+lint = "clippy -- -D warnings"

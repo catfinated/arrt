@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
-use serde;
-use serde_yaml;
 use serde::{Serialize, Deserialize};
 
 use crate::render::ColorRGB;
@@ -65,7 +63,7 @@ impl MaterialMap {
     pub fn new(fpath: &PathBuf) -> MaterialMap {
         println!("loading materials from: {:#?}", fpath);
         let inf = File::open(fpath).unwrap();
-        let materials: Vec<Material> =  serde_yaml::from_reader(&inf).unwrap();
+        let materials: Vec<Material> = serde_yml::from_reader(&inf).unwrap();
 
         for mat in &materials {
             println!("{:?}", mat);
