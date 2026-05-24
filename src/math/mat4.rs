@@ -206,3 +206,77 @@ impl Mul for &Mat4 {
         m
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::{vec3::Vec3, vec4::Vec4, Degree};
+
+    fn approx(a: f32, b: f32) -> bool {
+        (a - b).abs() < 1e-5
+    }
+
+    #[test]
+    fn identity_times_vec_is_identity() {
+        let v = Vec4::new(1.0, 2.0, 3.0, 1.0);
+        let r = &Mat4::identity() * v;
+        assert!(approx(r[0], 1.0) && approx(r[1], 2.0) && approx(r[2], 3.0));
+    }
+
+    #[test]
+    fn translate_moves_point() {
+        let t = Vec3::new(1.0, 2.0, 3.0);
+        let r = &Mat4::translate(&t) * Vec4::new(0.0, 0.0, 0.0, 1.0);
+        assert!(approx(r[0], 1.0) && approx(r[1], 2.0) && approx(r[2], 3.0));
+    }
+
+    #[test]
+    fn translate_inverse_cancels() {
+        let t = Vec3::new(5.0, -3.0, 2.0);
+        let combined = &Mat4::translate(&t) * &Mat4::itranslate(&t);
+        let r = &combined * Vec4::new(1.0, 2.0, 3.0, 1.0);
+        assert!(approx(r[0], 1.0) && approx(r[1], 2.0) && approx(r[2], 3.0));
+    }
+
+    #[test]
+    fn scale_stretches_vector() {
+        let s = Vec3::new(2.0, 3.0, 4.0);
+        let r = &Mat4::scale(&s) * Vec4::new(1.0, 1.0, 1.0, 0.0);
+        assert!(approx(r[0], 2.0) && approx(r[1], 3.0) && approx(r[2], 4.0));
+    }
+
+    #[test]
+    fn scale_inverse_cancels() {
+        let s = Vec3::new(2.0, 3.0, 4.0);
+        let combined = &Mat4::scale(&s) * &Mat4::iscale(&s);
+        let r = &combined * Vec4::new(1.0, 1.0, 1.0, 0.0);
+        assert!(approx(r[0], 1.0) && approx(r[1], 1.0) && approx(r[2], 1.0));
+    }
+
+    #[test]
+    fn rotate_x_90_maps_y_to_z() {
+        let r = &Mat4::rotate_x(Degree(90.0)) * Vec4::new(0.0, 1.0, 0.0, 0.0);
+        assert!(approx(r[0], 0.0) && approx(r[1], 0.0) && approx(r[2], 1.0));
+    }
+
+    #[test]
+    fn rotate_y_90_maps_z_to_x() {
+        let r = &Mat4::rotate_y(Degree(90.0)) * Vec4::new(0.0, 0.0, 1.0, 0.0);
+        assert!(approx(r[0], 1.0) && approx(r[1], 0.0) && approx(r[2], 0.0));
+    }
+
+    #[test]
+    fn rotate_z_90_maps_x_to_neg_y() {
+        let r = &Mat4::rotate_z(Degree(90.0)) * Vec4::new(1.0, 0.0, 0.0, 0.0);
+        assert!(approx(r[0], 0.0) && approx(r[1], 1.0) && approx(r[2], 0.0));
+    }
+
+    #[test]
+    fn transpose_of_rotation_is_inverse() {
+        let rot = Mat4::rotate_z(Degree(45.0));
+        let m = &rot * &rot.transpose();
+        // R * R^T = I for rotation matrices
+        assert!(approx(m[0][0], 1.0) && approx(m[1][1], 1.0) && approx(m[2][2], 1.0));
+        assert!(approx(m[0][1], 0.0) && approx(m[1][0], 0.0));
+    }
+}

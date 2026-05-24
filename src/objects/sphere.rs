@@ -86,3 +86,59 @@ impl Object for Sphere {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::{Range, Ray, Vec3};
+
+    fn unit_sphere() -> Sphere {
+        let cfg = SphereConfig { center: Vec3::new(0.0, 0.0, 0.0), radius: 1.0, material: String::new() };
+        Sphere::new(&cfg, MaterialID(0))
+    }
+
+    fn range() -> Range {
+        Range { min: 0.001, max: f32::MAX }
+    }
+
+    #[test]
+    fn hit_along_z_axis() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        assert!(unit_sphere().intersect(&ray, range()).is_some());
+    }
+
+    #[test]
+    fn hit_t_is_front_face() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        let t = unit_sphere().intersect(&ray, range()).unwrap().t;
+        assert!((t - 4.0).abs() < 1e-5); // front face at z=-1, origin at z=-5 => t=4
+    }
+
+    #[test]
+    fn miss_ray_passes_beside() {
+        let ray = Ray { origin: Vec3::new(2.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        assert!(unit_sphere().intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn miss_ray_points_away() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, 5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        assert!(unit_sphere().intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn normal_points_outward() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        let normal = unit_sphere().intersect(&ray, range()).unwrap().normal;
+        assert!(normal.z() < 0.0); // front face normal points toward the ray
+    }
+
+    #[test]
+    fn offset_sphere_hit() {
+        let cfg = SphereConfig { center: Vec3::new(3.0, 0.0, 0.0), radius: 1.0, material: String::new() };
+        let sphere = Sphere::new(&cfg, MaterialID(0));
+        let ray = Ray { origin: Vec3::new(3.0, 5.0, 0.0), direction: Vec3::new(0.0, -1.0, 0.0), depth: 0 };
+        let t = sphere.intersect(&ray, range()).unwrap().t;
+        assert!((t - 4.0).abs() < 1e-5);
+    }
+}

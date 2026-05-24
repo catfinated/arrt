@@ -199,3 +199,100 @@ pub fn refract(v: &Vec3, n: &Vec3, cos_theta_i: f32, eta: f32) -> Option<Vec3> {
     // total internal reflection !!
     result
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn approx(a: f32, b: f32) -> bool {
+        (a - b).abs() < 1e-5
+    }
+
+    #[test]
+    fn add() {
+        let c = Vec3::new(1.0, 2.0, 3.0) + Vec3::new(4.0, 5.0, 6.0);
+        assert_eq!([c.x(), c.y(), c.z()], [5.0, 7.0, 9.0]);
+    }
+
+    #[test]
+    fn sub() {
+        let c = Vec3::new(4.0, 5.0, 6.0) - Vec3::new(1.0, 2.0, 3.0);
+        assert_eq!([c.x(), c.y(), c.z()], [3.0, 3.0, 3.0]);
+    }
+
+    #[test]
+    fn scalar_mul() {
+        let v = Vec3::new(1.0, 2.0, 3.0) * 2.0;
+        assert_eq!([v.x(), v.y(), v.z()], [2.0, 4.0, 6.0]);
+    }
+
+    #[test]
+    fn neg() {
+        let v = -Vec3::new(1.0, -2.0, 3.0);
+        assert_eq!([v.x(), v.y(), v.z()], [-1.0, 2.0, -3.0]);
+    }
+
+    #[test]
+    fn dot_product() {
+        assert_eq!(dot(Vec3::new(1.0, 2.0, 3.0), Vec3::new(4.0, 5.0, 6.0)), 32.0);
+    }
+
+    #[test]
+    fn dot_orthogonal_is_zero() {
+        assert_eq!(dot(Vec3::new(1.0, 0.0, 0.0), Vec3::new(0.0, 1.0, 0.0)), 0.0);
+    }
+
+    #[test]
+    fn cross_basis_vectors() {
+        let z = cross(Vec3::new(1.0, 0.0, 0.0), Vec3::new(0.0, 1.0, 0.0));
+        assert!(approx(z.x(), 0.0) && approx(z.y(), 0.0) && approx(z.z(), 1.0));
+    }
+
+    #[test]
+    fn length_3_4_5() {
+        assert!(approx(length(Vec3::new(3.0, 4.0, 0.0)), 5.0));
+    }
+
+    #[test]
+    fn normalize_is_unit() {
+        let n = normalize(Vec3::new(3.0, 4.0, 0.0));
+        assert!(approx(length(n), 1.0));
+        assert!(approx(n.x(), 0.6) && approx(n.y(), 0.8));
+    }
+
+    #[test]
+    fn reflect_along_normal() {
+        // v == n: reflected direction equals incident direction
+        let v = normalize(Vec3::new(0.0, 1.0, 0.0));
+        let n = Vec3::new(0.0, 1.0, 0.0);
+        let r = reflect(v, n);
+        assert!(approx(r.y(), 1.0));
+    }
+
+    #[test]
+    fn reflect_flips_tangent() {
+        // v at 45° to normal: tangential component flips sign
+        let v = normalize(Vec3::new(1.0, 1.0, 0.0));
+        let n = Vec3::new(0.0, 1.0, 0.0);
+        let r = reflect(v, n);
+        assert!(r.x() < 0.0 && r.y() > 0.0);
+    }
+
+    #[test]
+    fn refract_total_internal_reflection() {
+        // cos_theta_i = 0 (grazing), eta = 0.5 => sin²/η² > 1
+        let v = normalize(Vec3::new(1.0, 0.0, 0.0));
+        let n = Vec3::new(0.0, 1.0, 0.0);
+        assert!(refract(&v, &n, 0.0, 0.5).is_none());
+    }
+
+    #[test]
+    fn refract_normal_incidence_no_bending() {
+        // v is the view vector (from hit point toward viewer), n is surface normal.
+        // With v == n (straight-on) and eta=1, transmitted ray goes straight through (-y).
+        let v = Vec3::new(0.0, 1.0, 0.0);
+        let n = Vec3::new(0.0, 1.0, 0.0);
+        let t = refract(&v, &n, 1.0, 1.0).unwrap();
+        assert!(approx(t.y(), -1.0));
+    }
+}

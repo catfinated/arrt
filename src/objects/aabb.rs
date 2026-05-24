@@ -131,3 +131,57 @@ impl Aabb {
         Some(t_near)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::{Range, Ray, Vec3};
+
+    fn unit_box() -> Aabb {
+        Aabb::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0))
+    }
+
+    fn range() -> Range {
+        Range { min: 0.001, max: f32::MAX }
+    }
+
+    #[test]
+    fn hit_straight_on() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        assert!(unit_box().intersect(&ray, range()).is_some());
+    }
+
+    #[test]
+    fn hit_t_value() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        let t = unit_box().intersect(&ray, range()).unwrap();
+        assert!((t - 4.0).abs() < 1e-5); // front face at z=-1, origin at z=-5 => t=4
+    }
+
+    #[test]
+    fn miss_ray_passes_beside() {
+        let ray = Ray { origin: Vec3::new(5.0, 0.0, -5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        assert!(unit_box().intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn miss_ray_points_away() {
+        let ray = Ray { origin: Vec3::new(0.0, 0.0, 5.0), direction: Vec3::new(0.0, 0.0, 1.0), depth: 0 };
+        assert!(unit_box().intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn center() {
+        let b = Aabb::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(2.0, 4.0, 6.0));
+        let c = b.center();
+        assert_eq!([c.x(), c.y(), c.z()], [1.0, 2.0, 3.0]);
+    }
+
+    #[test]
+    fn merge_spans_both() {
+        let a = Aabb::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 1.0, 1.0));
+        let b = Aabb::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(0.5, 0.5, 0.5));
+        let m = a.merge(&b).center();
+        assert_eq!([m.x(), m.y(), m.z()], [0.0, 0.0, 0.0]);
+    }
+}

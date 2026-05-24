@@ -65,3 +65,55 @@ impl Object for Plane {
         surf
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::math::{Range, Ray, Vec3};
+
+    fn xz_plane() -> Plane {
+        let cfg = PlaneConfig {
+            point: Vec3::new(0.0, 0.0, 0.0),
+            normal: Vec3::new(0.0, 1.0, 0.0),
+            material: String::new(),
+        };
+        Plane::new(&cfg, MaterialID(0))
+    }
+
+    fn range() -> Range {
+        Range { min: 0.001, max: f32::MAX }
+    }
+
+    #[test]
+    fn hit_from_above() {
+        let ray = Ray { origin: Vec3::new(0.0, 5.0, 0.0), direction: Vec3::new(0.0, -1.0, 0.0), depth: 0 };
+        assert!(xz_plane().intersect(&ray, range()).is_some());
+    }
+
+    #[test]
+    fn hit_t_value() {
+        let ray = Ray { origin: Vec3::new(0.0, 5.0, 0.0), direction: Vec3::new(0.0, -1.0, 0.0), depth: 0 };
+        let t = xz_plane().intersect(&ray, range()).unwrap().t;
+        assert!((t - 5.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn miss_parallel_ray() {
+        let ray = Ray { origin: Vec3::new(0.0, 1.0, 0.0), direction: Vec3::new(1.0, 0.0, 0.0), depth: 0 };
+        assert!(xz_plane().intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn miss_ray_points_away() {
+        let ray = Ray { origin: Vec3::new(0.0, -1.0, 0.0), direction: Vec3::new(0.0, -1.0, 0.0), depth: 0 };
+        assert!(xz_plane().intersect(&ray, range()).is_none());
+    }
+
+    #[test]
+    fn normal_flips_for_back_face() {
+        // ray from below: normal should point downward (toward the ray)
+        let ray = Ray { origin: Vec3::new(0.0, -5.0, 0.0), direction: Vec3::new(0.0, 1.0, 0.0), depth: 0 };
+        let normal = xz_plane().intersect(&ray, range()).unwrap().normal;
+        assert!(normal.y() < 0.0);
+    }
+}
