@@ -1,4 +1,3 @@
-
 use crate::math::Vec3;
 use crate::render::ColorRGB;
 

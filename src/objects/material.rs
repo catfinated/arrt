@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::render::ColorRGB;
 use crate::math::Vec3;
+use crate::render::ColorRGB;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -43,39 +43,44 @@ pub struct Surfel {
 
 impl Default for Material {
     fn default() -> Self {
-        Self { name: "".to_string(),
-               ambient: ColorRGB::black(),
-               diffuse: ColorRGB::black(),
-               specular: ColorRGB::black(),
-               transmissive: ColorRGB::black(),
-               ka: 1.0_f32,
-               kd: 1.0_f32,
-               ks: 1.0_f32,
-               kr: 0.0_f32,
-               kt: 0.0_f32,
-               ior: 0.0_f32,
-               shininess: 1.0_f32,
-               highlight: 0.0_f32, }
+        Self {
+            name: String::new(),
+            ambient: ColorRGB::black(),
+            diffuse: ColorRGB::black(),
+            specular: ColorRGB::black(),
+            transmissive: ColorRGB::black(),
+            ka: 1.0_f32,
+            kd: 1.0_f32,
+            ks: 1.0_f32,
+            kr: 0.0_f32,
+            kt: 0.0_f32,
+            ior: 0.0_f32,
+            shininess: 1.0_f32,
+            highlight: 0.0_f32,
+        }
     }
 }
 
 impl MaterialMap {
     pub fn new(fpath: &PathBuf) -> MaterialMap {
-        println!("loading materials from: {:#?}", fpath);
+        println!("loading materials from: {}", fpath.display());
         let inf = File::open(fpath).unwrap();
         let materials: Vec<Material> = serde_yml::from_reader(&inf).unwrap();
 
         for mat in &materials {
-            println!("{:?}", mat);
+            println!("{mat:?}");
         }
 
         let mut name_to_id = HashMap::new();
         for (i, mat) in materials.iter().enumerate() {
             name_to_id.insert(mat.name.clone(), MaterialID(i));
         }
-        MaterialMap{materials, name_to_id}
+        MaterialMap {
+            materials,
+            name_to_id,
+        }
     }
-     
+
     pub fn get_material_id(&self, name: &str) -> MaterialID {
         self.name_to_id[name]
     }
@@ -84,4 +89,3 @@ impl MaterialMap {
         &self.materials[id.0]
     }
 }
-

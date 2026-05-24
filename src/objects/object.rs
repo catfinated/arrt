@@ -1,4 +1,4 @@
-use crate::math::{Vec3, Ray, Range};
+use crate::math::{Range, Ray, Vec3};
 
 use super::aabb::Aabb;
 use super::material::Surfel;

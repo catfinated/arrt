@@ -1,13 +1,12 @@
 use core::f32;
 use std::cmp::Ordering;
 
-use serde;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::math::{normalize, Vec3};
 use super::aabb::Aabb;
-use super::transform::Transform;
 use super::mesh::{Mesh, Triangle};
+use super::transform::Transform;
+use crate::math::{normalize, Vec3};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SuperQuadricConfig {
@@ -27,17 +26,17 @@ static THETA_RANGE: f32 = f32::consts::PI;
 static PHI_START: f32 = -f32::consts::PI;
 static PHI_RANGE: f32 = f32::consts::TAU;
 
-
+#[allow(clippy::cast_precision_loss)]
 fn theta(vslice: u32, max_v: u32) -> f32 {
     (vslice as f32 * (THETA_RANGE / max_v as f32)) + THETA_START
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn phi(hslice: u32, max_h: u32) -> f32 {
     (hslice as f32 * (PHI_RANGE / max_h as f32)) + PHI_START
 }
 
-fn sgn(val: f32) -> f32
-{
+fn sgn(val: f32) -> f32 {
     match val.total_cmp(&0.0_f32) {
         Ordering::Less => -1.0_f32,
         Ordering::Greater => 1.0_f32,
@@ -46,20 +45,17 @@ fn sgn(val: f32) -> f32
 }
 
 // with angles that can go negative
-fn cos_exp(angle: f32, exp: f32) -> f32
-{
+fn cos_exp(angle: f32, exp: f32) -> f32 {
     let f = angle.cos();
     sgn(f) * f.abs().powf(exp)
 }
 
-fn sin_exp(angle: f32, exp: f32) -> f32
-{
+fn sin_exp(angle: f32, exp: f32) -> f32 {
     let f = angle.sin();
     sgn(f) * f.abs().powf(exp)
 }
 
-fn compute_point(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3
-{
+fn compute_point(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3 {
     // theta is north/south like latitude, phi is east/west
     let cos_theta_e1 = cos_exp(theta, e1);
     let cos_phi_e2 = cos_exp(phi, e2);
@@ -73,8 +69,7 @@ fn compute_point(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3
     Vec3::new(x, y, z)
 }
 
-fn compute_normal(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3
-{
+fn compute_normal(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3 {
     let cos_theta_e1 = cos_exp(theta, 2.0_f32 - e1);
     let cos_phi_e2 = cos_exp(phi, 2.0_f32 - e2);
     let sin_phi_e2 = sin_exp(phi, 2.0_f32 - e2);
@@ -87,10 +82,13 @@ fn compute_normal(theta: f32, phi: f32, e1: f32, e2: f32, a: Vec3) -> Vec3
     normalize(Vec3::new(x, y, z))
 }
 
-
 pub fn tessellate_superquadric(config: &SuperQuadricConfig) -> Mesh {
-    println!("Tessellating super quadric {:?}", config);
-    let inverse_a = Vec3::new(1.0_f32 / config.a.x(), 1.0_f32 / config.a.y(), 1.0_f32 / config.a.z());
+    println!("Tessellating super quadric {config:?}");
+    let inverse_a = Vec3::new(
+        1.0_f32 / config.a.x(),
+        1.0_f32 / config.a.y(),
+        1.0_f32 / config.a.z(),
+    );
 
     // -pi / 2 <= theta <=  pi / 2
     // -pi <= phi < pi
@@ -165,15 +163,32 @@ pub fn tessellate_superquadric(config: &SuperQuadricConfig) -> Mesh {
             assert!(bottom_left < vertices.len());
             assert!(bottom_right < vertices.len());
             assert!(top_left < vertices.len());
-            assert!(top_right < vertices.len(), "{} {}", top_right, vertices.len());
+            assert!(
+                top_right < vertices.len(),
+                "{} {}",
+                top_right,
+                vertices.len()
+            );
 
-            triangles.push(Triangle{i: bottom_left, j: bottom_right, k: top_left});
-            triangles.push(Triangle{i: top_right, j: top_left, k: bottom_right});
+            triangles.push(Triangle {
+                i: bottom_left,
+                j: bottom_right,
+                k: top_left,
+            });
+            triangles.push(Triangle {
+                i: top_right,
+                j: top_left,
+                k: bottom_right,
+            });
         }
     }
 
     let bbox = Aabb::new(box_min, box_max);
-    println!("ellipsoid bbox: {:?}", bbox);
-    Mesh{ vertices, normals, triangles, bbox }
-
+    println!("ellipsoid bbox: {bbox:?}");
+    Mesh {
+        vertices,
+        triangles,
+        normals,
+        bbox,
+    }
 }

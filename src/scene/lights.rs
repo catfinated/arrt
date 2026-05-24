@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::lights::PointLight;
 use crate::lights::SpotLight;
@@ -8,4 +8,3 @@ pub enum LightsConfig {
     Point(PointLight),
     Spot(SpotLight),
 }
-

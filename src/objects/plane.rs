@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::math::{dot, in_range, Range, Ray, Vec3};
 
@@ -10,7 +10,7 @@ use super::object::Object;
 pub struct PlaneConfig {
     pub point: Vec3,
     pub normal: Vec3,
-    pub material: String
+    pub material: String,
 }
 
 pub struct Plane {
@@ -21,7 +21,11 @@ pub struct Plane {
 
 impl Plane {
     pub fn new(config: &PlaneConfig, material_id: MaterialID) -> Self {
-        Plane{point: config.point, normal: config.normal, material_id}
+        Plane {
+            point: config.point,
+            normal: config.normal,
+            material_id,
+        }
     }
 }
 
@@ -34,8 +38,8 @@ impl Object for Plane {
         self.point
     }
 
+    #[allow(clippy::similar_names)]
     fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
-        //println("plane intersect!");
         let ndotrd = dot(self.normal, ray.direction);
         let mut surf = None;
 
@@ -49,11 +53,15 @@ impl Object for Plane {
                 if ndotrd > 0.0_f32 {
                     normal = -normal;
                 }
-                surf = Some(Surfel{t, hit_point, normal, material_id: self.material_id, n_offset: 0.0_f32});
-
+                surf = Some(Surfel {
+                    t,
+                    hit_point,
+                    normal,
+                    material_id: self.material_id,
+                    n_offset: 0.0_f32,
+                });
             }
         }
         surf
-
     }
 }

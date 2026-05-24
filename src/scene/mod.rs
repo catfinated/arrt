@@ -1,22 +1,24 @@
 pub mod camera;
 
-mod objects;
 mod lights;
+mod objects;
 
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::render::ColorRGB;
-use crate::objects::{bpatch, superquadric, Bvh, Material, MaterialMap, Mesh, Instance, Object, Plane, Sphere, Surfel};
 use crate::lights::{Light, PointLight, SpotLight};
+use crate::objects::{
+    bpatch, superquadric, Bvh, Instance, Material, MaterialMap, Mesh, Object, Plane, Sphere, Surfel,
+};
+use crate::render::ColorRGB;
 
 use camera::CameraConfig;
-use objects::ObjectConfig;
 use lights::LightsConfig;
+use objects::ObjectConfig;
 
 pub use camera::Camera;
 
@@ -28,7 +30,7 @@ struct SceneConfig {
     #[serde(default)]
     mesh_dir: String,
     #[serde(default)]
-    patch_dir: String,    
+    patch_dir: String,
     #[serde(default = "ColorRGB::white")]
     ambient: ColorRGB,
     camera: CameraConfig,
@@ -56,15 +58,19 @@ impl Scene {
         for light in &config.lights {
             match light {
                 LightsConfig::Point(pl) => {
-                    lights.push(Arc::new(PointLight{..*pl}));
+                    lights.push(Arc::new(PointLight { ..*pl }));
                 }
                 LightsConfig::Spot(sl) => {
-                    lights.push(Arc::new(SpotLight{..*sl}));
+                    lights.push(Arc::new(SpotLight { ..*sl }));
                 }
             }
         }
 
-        Scene{config, materials_map, lights}
+        Scene {
+            config,
+            materials_map,
+            lights,
+        }
     }
 
     pub fn make_objects(&self) -> Vec<Arc<dyn Object>> {
@@ -77,24 +83,33 @@ impl Scene {
         for obj in &self.config.objects {
             match obj {
                 ObjectConfig::Sphere(s) => {
-                    bounded_objs.push(Arc::new(Sphere::new(s, self.materials_map.get_material_id(&s.material))));
+                    bounded_objs.push(Arc::new(Sphere::new(
+                        s,
+                        self.materials_map.get_material_id(&s.material),
+                    )));
                 }
                 ObjectConfig::Model(m) => {
                     let material_id = self.materials_map.get_material_id(&m.material);
-                    let mesh: &Arc<Mesh> = meshes.entry(m.mesh.clone())
-                    .or_insert_with(|| Arc::new(Mesh::fromSMF(&m.mesh, mesh_dir)));
-                    bounded_objs.push(Arc::new(Instance::new(mesh.clone(),
-                                                       material_id,
-                                                       &m.transform)));
-                },
+                    let mesh: &Arc<Mesh> = meshes
+                        .entry(m.mesh.clone())
+                        .or_insert_with(|| Arc::new(Mesh::fromSMF(&m.mesh, mesh_dir)));
+                    bounded_objs.push(Arc::new(Instance::new(
+                        mesh.clone(),
+                        material_id,
+                        &m.transform,
+                    )));
+                }
                 ObjectConfig::Plane(p) => {
-                    all_objs.push(Arc::new(Plane::new(p, self.materials_map.get_material_id(&p.material))));
-                },
+                    all_objs.push(Arc::new(Plane::new(
+                        p,
+                        self.materials_map.get_material_id(&p.material),
+                    )));
+                }
                 ObjectConfig::SuperQuadric(sqc) => {
                     let material_id = self.materials_map.get_material_id(&sqc.material);
                     let se = Arc::new(superquadric::tessellate_superquadric(sqc));
                     bounded_objs.push(Arc::new(Instance::new(se, material_id, &sqc.transform)));
-                },
+                }
                 ObjectConfig::BPatch(bpc) => {
                     let material_id = self.materials_map.get_material_id(&bpc.material);
                     let bp = Arc::new(bpatch::tessellate_bpatch(patch_dir, bpc));
@@ -108,9 +123,13 @@ impl Scene {
         all_objs
     }
 
-    pub fn make_camera(&self) -> Camera
-    {
-        Camera::new(&self.config.camera, self.width() as f32, self.height() as f32)
+    #[allow(clippy::cast_precision_loss)]
+    pub fn make_camera(&self) -> Camera {
+        Camera::new(
+            &self.config.camera,
+            self.width() as f32,
+            self.height() as f32,
+        )
     }
 
     pub fn width(&self) -> u32 {

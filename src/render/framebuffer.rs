@@ -1,9 +1,9 @@
-use std::path::Path;
+#![allow(clippy::missing_panics_doc)]
+
 use std::fs::File;
 use std::io::BufWriter;
+use std::path::Path;
 use std::time::Instant;
-
-use png;
 
 use rayon::prelude::*;
 
@@ -12,21 +12,29 @@ use super::color::ColorRGB;
 pub struct Framebuffer {
     pub width: usize,
     pub height: usize,
-    pub data: Vec<ColorRGB>
+    pub data: Vec<ColorRGB>,
 }
 
 impl Framebuffer {
+    #[must_use]
     pub fn new(width: usize, height: usize) -> Framebuffer {
         assert!(width > 0 && width < u32::MAX as usize);
         assert!(height > 0 && height < u32::MAX as usize);
 
         let mut data = Vec::new();
-        data.resize(width * height, ColorRGB{r: 0.0, g: 0.0, b: 0.0});
+        data.resize(
+            width * height,
+            ColorRGB {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+            },
+        );
 
         Framebuffer {
             width,
             height,
-            data
+            data,
         }
     }
 
@@ -35,12 +43,14 @@ impl Framebuffer {
         let file = File::create(path).unwrap();
         let bufwriter = &mut BufWriter::new(file);
 
+        // Framebuffer::new asserts these fit in u32.
+        #[allow(clippy::cast_possible_truncation)]
         let mut encoder = png::Encoder::new(bufwriter, self.width as u32, self.height as u32);
         encoder.set_color(png::ColorType::Rgb);
         encoder.set_depth(png::BitDepth::Eight);
         let mut writer = encoder.write_header().unwrap();
 
-        let srgb: Vec<u8> = self.data.par_iter().flat_map(|c| c.to_irgb()).collect();
+        let srgb: Vec<u8> = self.data.par_iter().flat_map(ColorRGB::to_irgb).collect();
         writer.write_image_data(&srgb).unwrap();
         let stop = Instant::now();
         println!("wrote {} in {:?}", path.display(), stop - start);
@@ -53,10 +63,11 @@ impl Framebuffer {
         self.data[idx] = *color;
     }
 
+    #[must_use]
     pub fn get_color(&self, x: usize, y: usize) -> ColorRGB {
         assert!(x < self.width, "{} {}", x, self.width);
         assert!(y < self.height, "{} {}", y, self.height);
         let idx: usize = (y * self.width) + x;
-         self.data[idx]
+        self.data[idx]
     }
 }

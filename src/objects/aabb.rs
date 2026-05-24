@@ -1,8 +1,8 @@
 use crate::math::Vec4;
-use crate::math::{Ray, Range, Vec3, Mat4};
+use crate::math::{Mat4, Range, Ray, Vec3};
 
-use std::mem;
 use std::f32;
+use std::mem;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Aabb {
@@ -17,7 +17,7 @@ fn nearly_zero(f: f32) -> bool {
 
 impl Aabb {
     pub fn new(min: Vec3, max: Vec3) -> Self {
-        Aabb{ min, max }
+        Aabb { min, max }
     }
 
     pub fn zero() -> Aabb {
@@ -33,15 +33,19 @@ impl Aabb {
     }
 
     pub fn merge(&self, other: &Self) -> Self {
-        let min = Vec3::new(self.min.x().min(other.min.x()),
-                            self.min.y().min(other.min.y()),
-                            self.min.z().min(other.min.z()));
+        let min = Vec3::new(
+            self.min.x().min(other.min.x()),
+            self.min.y().min(other.min.y()),
+            self.min.z().min(other.min.z()),
+        );
 
-        let max = Vec3::new(self.max.x().max(other.max.x()),
-                            self.max.y().max(other.max.y()),
-                            self.max.z().max(other.max.z()));
+        let max = Vec3::new(
+            self.max.x().max(other.max.x()),
+            self.max.y().max(other.max.y()),
+            self.max.z().max(other.max.z()),
+        );
 
-        Aabb{ min, max }
+        Aabb { min, max }
     }
 
     fn vertices(&self) -> [Vec3; 8] {
@@ -57,13 +61,13 @@ impl Aabb {
         ]
     }
 
-    /// Transform bounding box 
+    /// Transform bounding box
     pub fn transform(&self, m: &Mat4) -> Self {
         let mut mins = [f32::MAX, f32::MAX, f32::MAX];
         let mut maxs = [f32::MIN, f32::MIN, f32::MIN];
 
         // Convert to cube, transform cube, re-align to axes
-        for vertex in self.vertices().iter() {
+        for vertex in &self.vertices() {
             let v = (m * Vec4::from_vec3(*vertex, 1.0_f32)).to_vec3();
             mins[0] = mins[0].min(v.x());
             mins[1] = mins[1].min(v.y());
@@ -71,34 +75,33 @@ impl Aabb {
 
             maxs[0] = maxs[0].max(v.x());
             maxs[1] = maxs[1].max(v.y());
-            maxs[2] = maxs[2].max(v.z());            
+            maxs[2] = maxs[2].max(v.z());
         }
-        
-        Aabb{ min: Vec3::new(mins[0], mins[1], mins[2]), 
-          max: Vec3::new(maxs[0], maxs[1], maxs[2]) }
+
+        Aabb {
+            min: Vec3::new(mins[0], mins[1], mins[2]),
+            max: Vec3::new(maxs[0], maxs[1], maxs[2]),
+        }
     }
 
     pub fn intersect(&self, ray: &Ray, range: Range) -> Option<f32> {
-
         let mut t_near = range.min;
         let mut t_far = range.max;
 
-
-        for i in 0..3 { // for each axis
+        for i in 0..3 {
+            // for each axis
             let d = ray.direction[i];
             let o = ray.origin[i];
 
-            if nearly_zero(d) { // parallel to axis
+            if nearly_zero(d) {
+                // parallel to axis
                 if o < self.min[i] || o > self.max[i] {
                     // box is intersected by the plane
                     // defined AXIS = o
                     return None;
                 }
-                else {
-                    // never going to hit the plane of this
-                    // axis with this ray.
-                    continue;
-                }
+                // never going to hit the plane of this axis with this ray.
+                continue;
             }
 
             let f = 1.0_f32 / d;

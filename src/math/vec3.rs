@@ -1,5 +1,5 @@
-use std::ops::{Add, Sub, Mul, Div, Index, Neg};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -9,11 +9,11 @@ pub struct Vec3 {
 
 impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Vec3 {
-        Vec3{ dat: [x, y, z] }
+        Vec3 { dat: [x, y, z] }
     }
 
     pub fn fill(val: f32) -> Vec3 {
-        Vec3{ dat: [val; 3] }
+        Vec3 { dat: [val; 3] }
     }
 
     pub fn zeros() -> Vec3 {
@@ -53,9 +53,13 @@ impl Add for Vec3 {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        Vec3 { dat: [self.x() + other.x(),
-                     self.y() + other.y(),
-                     self.z() + other.z()] }
+        Vec3 {
+            dat: [
+                self.x() + other.x(),
+                self.y() + other.y(),
+                self.z() + other.z(),
+            ],
+        }
     }
 }
 
@@ -63,9 +67,9 @@ impl Add<f32> for Vec3 {
     type Output = Self;
 
     fn add(self, f: f32) -> Self {
-        Vec3 { dat: [self.x() + f,
-                     self.y() + f,
-                     self.z() + f] }
+        Vec3 {
+            dat: [self.x() + f, self.y() + f, self.z() + f],
+        }
     }
 }
 
@@ -73,9 +77,13 @@ impl Sub for Vec3 {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        Vec3 { dat: [self.x() - other.x(),
-                     self.y() - other.y(),
-                     self.z() - other.z()] }
+        Vec3 {
+            dat: [
+                self.x() - other.x(),
+                self.y() - other.y(),
+                self.z() - other.z(),
+            ],
+        }
     }
 }
 
@@ -83,9 +91,9 @@ impl Sub<f32> for Vec3 {
     type Output = Self;
 
     fn sub(self, f: f32) -> Self {
-        Vec3 { dat: [self.x() - f,
-                     self.y() - f,
-                     self.z() - f] }
+        Vec3 {
+            dat: [self.x() - f, self.y() - f, self.z() - f],
+        }
     }
 }
 
@@ -93,9 +101,13 @@ impl Mul for Vec3 {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
-        Vec3 { dat: [self.x() * other.x(),
-                     self.y() * other.y(),
-                     self.z() * other.z()] }
+        Vec3 {
+            dat: [
+                self.x() * other.x(),
+                self.y() * other.y(),
+                self.z() * other.z(),
+            ],
+        }
     }
 }
 
@@ -103,9 +115,9 @@ impl Mul<f32> for Vec3 {
     type Output = Self;
 
     fn mul(self, f: f32) -> Self {
-        Vec3 { dat: [self.x() * f,
-                     self.y() * f,
-                     self.z() * f] }
+        Vec3 {
+            dat: [self.x() * f, self.y() * f, self.z() * f],
+        }
     }
 }
 
@@ -162,6 +174,7 @@ pub fn dot(v: Vec3, u: Vec3) -> f32 {
     sum(v * u)
 }
 
+#[allow(clippy::many_single_char_names)]
 pub fn cross(v: Vec3, u: Vec3) -> Vec3 {
     let x = v.y() * u.z() - v.z() * u.y();
     let y = v.z() * u.x() - v.x() * u.z(); //-(v.x * u.z - v.z * u.x);
@@ -175,12 +188,12 @@ pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
 }
 
 pub fn refract(v: &Vec3, n: &Vec3, cos_theta_i: f32, eta: f32) -> Option<Vec3> {
-    let f  = 1.0_f32 - (1.0_f32 - (cos_theta_i * cos_theta_i)) / (eta * eta);
+    let f = 1.0_f32 - (1.0_f32 - (cos_theta_i * cos_theta_i)) / (eta * eta);
     let mut result = None;
 
     if f >= 0.0_f32 {
         let wt = -(*v) / eta - (f.sqrt() - cos_theta_i / eta) * *n;
-        result = Some(normalize(wt))
+        result = Some(normalize(wt));
     }
 
     // total internal reflection !!

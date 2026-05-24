@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::math::{Vec3, Degree, dot, to_radians};
+use crate::math::{dot, to_radians, Degree, Vec3};
 use crate::render::ColorRGB;
 
 use super::Light;
@@ -28,12 +28,11 @@ impl Light for SpotLight {
     }
 
     fn intensity_at(&self, at: Vec3) -> f32 {
-
         let r = to_radians(self.angle).0;
         let phi = dot(-at, self.direction).acos();
-        
+
         if phi > r {
-            return 0.0_f32
+            return 0.0_f32;
         }
 
         let n = std::f32::consts::PI / 2.0;
@@ -41,6 +40,4 @@ impl Light for SpotLight {
         let f = (n * d).cos();
         f.powf(self.sharpness)
     }
-
 }
-

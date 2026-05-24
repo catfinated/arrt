@@ -1,14 +1,14 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::math::{cross, normalize, Degree, Ray, Vec3};
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct CameraConfig {
-    pub eye: Vec3, // camera location O
-    pub up: Vec3, // camera view up vector Vup
+    pub eye: Vec3,     // camera location O
+    pub up: Vec3,      // camera view up vector Vup
     pub look_at: Vec3, // camera view out direction Zv
-    pub dist: f32, // distance to image plane
-    pub fov: Degree // field of view
+    pub dist: f32,     // distance to image plane
+    pub fov: Degree,   // field of view
 }
 
 pub struct Camera {
@@ -19,7 +19,7 @@ pub struct Camera {
     sj: f32,
     sk: f32,
     hres: f32,
-    vres: f32
+    vres: f32,
 }
 
 impl Camera {
@@ -38,16 +38,16 @@ impl Camera {
         let top_left = config.eye + config.dist * zv + (sj / 2.0_f32) * xv + (sk / 2.0_f32) * yv;
 
         println!("eye: {:?}", config.eye);
-        println!("zv:  {:?}", zv);
-        println!("vup: {:?}", vup);
-        println!("xv:  {:?}", xv);
-        println!("yv:  {:?}", yv);
-        println!("sj:  {}", sj);
-        println!("sk:  {}", sk);
-        println!("top left {:?}", top_left);
+        println!("zv:  {zv:?}");
+        println!("vup: {vup:?}");
+        println!("xv:  {xv:?}");
+        println!("yv:  {yv:?}");
+        println!("sj:  {sj}");
+        println!("sk:  {sk}");
+        println!("top left {top_left:?}");
         println!("fov:   {}", config.fov.0);
         println!("theta: {}", theta.0);
-        println!("h:     {}", h);
+        println!("h:     {h}");
         println!("dist:  {}", config.dist);
 
         Camera {
@@ -58,16 +58,20 @@ impl Camera {
             sj,
             sk,
             hres,
-            vres
+            vres,
         }
     }
 
     pub fn ray_at(&self, jf: f32, kf: f32) -> Ray {
-        let v = (self.top_left -
-            self.sj * (jf / (self.hres - 1.0_f32)) * self.xv -
-            self.sk * (kf / (self.vres - 1.0_f32)) * self.yv) -
-            self.eye;
+        let v = (self.top_left
+            - self.sj * (jf / (self.hres - 1.0_f32)) * self.xv
+            - self.sk * (kf / (self.vres - 1.0_f32)) * self.yv)
+            - self.eye;
 
-        Ray{origin: self.eye, direction: normalize(v), depth: 0}
+        Ray {
+            origin: self.eye,
+            direction: normalize(v),
+            depth: 0,
+        }
     }
 }

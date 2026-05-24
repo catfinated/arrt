@@ -1,20 +1,20 @@
 use std::sync::Arc;
-use std::time::{Instant, Duration};
+use std::time::{Duration, Instant};
 
 use super::{ColorRGB, XYCoord};
 
+use crate::math::{dot, normalize, reflect, refract, Range, Ray};
+use crate::objects::{Material, Object, Surfel};
 use crate::scene::{Camera, Scene};
-use crate::math::{Ray, Range, normalize, dot, reflect, refract};
-use crate::objects::{Object, Surfel, Material};
 
 /// Core ray tracer
 pub struct RayTracer {
     scene: Scene,
     camera: Camera,
-    objects: Vec<Arc<dyn Object>>
+    objects: Vec<Arc<dyn Object>>,
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct TraceResult {
     ray_count: u32,
     hit_count: u32,
@@ -26,7 +26,7 @@ pub struct TraceResult {
 #[derive(Copy, Clone)]
 pub struct TraceContext<'tracer> {
     tracer: &'tracer RayTracer,
-    pub result: TraceResult
+    pub result: TraceResult,
 }
 
 impl TraceResult {
@@ -42,7 +42,7 @@ impl TraceResult {
     pub fn combine(&self, rhs: &Self) -> Self {
         let mut trace_max = self.trace_max;
         if trace_max < rhs.trace_max {
-            trace_max = rhs.trace_max
+            trace_max = rhs.trace_max;
         }
 
         TraceResult {
@@ -53,6 +53,7 @@ impl TraceResult {
         }
     }
 
+    #[allow(clippy::cast_precision_loss)]
     pub fn print_stats(&self) {
         let mut hit_percent = 0.0;
         let mut avg_trace = Duration::from_secs(0);
@@ -60,16 +61,22 @@ impl TraceResult {
             hit_percent = (self.hit_count as f32 / self.ray_count as f32) * 100.0_f32;
             avg_trace = self.trace_sum / self.ray_count;
         }
-        println!("ray count: {}, hit count: {}, hit %: {:.2}, sum: {:?}, avg: {:?}, max: {:?}",
-                 self.ray_count, self.hit_count, hit_percent, self.trace_sum, avg_trace, self.trace_max);
+        println!(
+            "ray count: {}, hit count: {}, hit %: {:.2}, sum: {:?}, avg: {:?}, max: {:?}",
+            self.ray_count, self.hit_count, hit_percent, self.trace_sum, avg_trace, self.trace_max
+        );
     }
 }
 
 impl<'tracer> TraceContext<'tracer> {
     pub fn new(tracer: &'tracer RayTracer) -> Self {
-       TraceContext{tracer, result: TraceResult::new()}
+        TraceContext {
+            tracer,
+            result: TraceResult::new(),
+        }
     }
 
+    #[allow(clippy::cast_precision_loss)]
     pub fn sample_point(&mut self, j: usize, k: usize) -> ColorRGB {
         let ray = self.tracer.camera.ray_at(j as f32, k as f32);
         self.trace_ray(&ray)
@@ -87,8 +94,12 @@ impl<'tracer> TraceContext<'tracer> {
         let stop = Instant::now();
         let delta = stop - start;
         self.result.trace_sum += delta;
-        if delta > self.result.trace_max {self.result.trace_max = delta; }
-        if hit { self.result.hit_count += 1 }
+        if delta > self.result.trace_max {
+            self.result.trace_max = delta;
+        }
+        if hit {
+            self.result.hit_count += 1
+        }
         color
     }
 }
@@ -97,26 +108,30 @@ impl RayTracer {
     pub fn new(scene: Scene) -> Self {
         let camera = scene.make_camera();
         let objects = scene.make_objects();
-        RayTracer{scene,
-                  camera,
-                  objects}
+        RayTracer {
+            scene,
+            camera,
+            objects,
+        }
     }
 
     fn trace_ray(&self, ray: &Ray) -> Option<Surfel> {
-        let mut range = Range{ min: 0.025, max: f32::MAX };
+        let mut range = Range {
+            min: 0.025,
+            max: f32::MAX,
+        };
         let mut surfel = None;
 
         for object in &self.objects {
             if let Some(surf) = object.intersect(ray, range) {
                 range.max = surf.t;
                 surfel = Some(surf);
-            } 
+            }
         }
         surfel
     }
 
     pub fn sample_ray(&self, ray: &Ray) -> (ColorRGB, bool) {
-
         let max_depth = 5_u32;
         let surfel = self.trace_ray(ray);
 
@@ -130,13 +145,16 @@ impl RayTracer {
                 let color = self.shade(&surf, material, ray.depth);
                 (color, true)
             }
-            None => { (self.scene.bgcolor(), false) }
+            None => (self.scene.bgcolor(), false),
         }
     }
 
     /// Calculate light intensity due to shadowing
     fn shadow_intensity(&self, ray: &Ray, light_intensity: f32) -> f32 {
-        let mut range = Range{min: 0.001_f32, max: f32::MAX};
+        let mut range = Range {
+            min: 0.001_f32,
+            max: f32::MAX,
+        };
         let mut intensity = light_intensity;
 
         for object in &self.objects {
@@ -145,35 +163,36 @@ impl RayTracer {
                 if material.kt > 0.0_f32 {
                     intensity *= 0.5;
                     range.min = surf.t;
-                } else {   
+                } else {
                     return 0.0_f32;
                 }
-            } 
+            }
         }
 
         intensity
     }
 
     /// Apply shading to the given surface and material
-    /// Uses Hall/phong model 
-    fn shade(&self, 
-        surfel: &Surfel, 
-        material: &Material, 
-        curr_depth: u32) -> ColorRGB {
-
+    /// Uses Hall/phong model
+    fn shade(&self, surfel: &Surfel, material: &Material, curr_depth: u32) -> ColorRGB {
         let mut color = ColorRGB::black();
 
         let mut n = normalize(surfel.normal);
         let v = normalize(self.camera.eye - surfel.hit_point); // from P to viewer
         let mut visible_lights = Vec::new();
 
-        for light in self.scene.lights().iter() {
+        for light in self.scene.lights() {
             let l = normalize(light.direction_from(surfel.hit_point)); // from P to light
             let mut intensity = light.intensity_at(l); // for spot lights
 
             // shadows
-            if dot(n, l) > 0.0_f32 { // hit pint faces towards light
-                let ray = Ray{origin: surfel.hit_point + (0.01_f32 *n), direction: l, depth: curr_depth};
+            if dot(n, l) > 0.0_f32 {
+                // hit pint faces towards light
+                let ray = Ray {
+                    origin: surfel.hit_point + (0.01_f32 * n),
+                    direction: l,
+                    depth: curr_depth,
+                };
                 intensity = self.shadow_intensity(&ray, intensity);
             }
 
@@ -203,9 +222,14 @@ impl RayTracer {
         // reflections
         let mut reflected_color = ColorRGB::black();
 
-        if material.kr > 0.0_f32 { // material is reflective
+        if material.kr > 0.0_f32 {
+            // material is reflective
             let r = reflect(v, n);
-            let reflected = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: r, depth: curr_depth + 1};
+            let reflected = Ray {
+                origin: surfel.hit_point + (surfel.n_offset * n),
+                direction: r,
+                depth: curr_depth + 1,
+            };
             let reflected_intensity = self.sample_ray(&reflected).0;
             // specular reflection from other surfaces
             // + kr * Ir * Cs
@@ -225,7 +249,11 @@ impl RayTracer {
             }
 
             if let Some(t) = refract(&v, &n, cos_theta_i, eta) {
-                let transmitted = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: t, depth: curr_depth + 1};
+                let transmitted = Ray {
+                    origin: surfel.hit_point + (surfel.n_offset * n),
+                    direction: t,
+                    depth: curr_depth + 1,
+                };
                 let it = self.sample_ray(&transmitted).0;
                 color += material.kt * it * material.transmissive;
 
@@ -236,14 +264,17 @@ impl RayTracer {
                     let il = light.intensity_at(l);
                     color += material.kt * il * light.specular() * material.transmissive * f;
                 }
-   
             } else {
                 // option 1 - return reflective color
                 //let it = reflected_color;
 
                 // option 2 - shot an internal reflect ray
                 let r = reflect(v, n);
-                let ray = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: r, depth: curr_depth + 1};
+                let ray = Ray {
+                    origin: surfel.hit_point + (surfel.n_offset * n),
+                    direction: r,
+                    depth: curr_depth + 1,
+                };
 
                 // option 3 - make T = -V
                 //let ray = Ray{origin: surfel.hit_point + (surfel.n_offset * n), direction: -v, depth: curr_depth + 1};
@@ -259,6 +290,4 @@ impl RayTracer {
         color += ambient;
         color.clamp(0.0_f32, 1.0_f32)
     }
-
 }
-

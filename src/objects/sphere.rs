@@ -1,16 +1,16 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::math::{Ray, Range, Vec3, dot, normalize, in_range};
+use crate::math::{dot, in_range, normalize, Range, Ray, Vec3};
 
-use super::material::{Surfel, MaterialID};
-use super::object::Object;
 use super::aabb::Aabb;
+use super::material::{MaterialID, Surfel};
+use super::object::Object;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SphereConfig {
     pub center: Vec3,
     pub radius: f32,
-    pub material: String
+    pub material: String,
 }
 
 #[derive(Debug)]
@@ -18,19 +18,19 @@ pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
     pub material_id: MaterialID,
-    pub bbox: Aabb
+    pub bbox: Aabb,
 }
 
 impl Sphere {
     pub fn new(config: &SphereConfig, material: MaterialID) -> Sphere {
+        let bbox = Aabb::new(config.center - config.radius, config.center + config.radius);
 
-        let bbox = Aabb::new(config.center - config.radius,
-                             config.center + config.radius);
-
-        Sphere { center: config.center,
-                 radius: config.radius,
-                 material_id: material,
-                 bbox}
+        Sphere {
+            center: config.center,
+            radius: config.radius,
+            material_id: material,
+            bbox,
+        }
     }
 
     fn normal_at(&self, point: Vec3) -> Vec3 {
@@ -39,17 +39,15 @@ impl Sphere {
 }
 
 impl Object for Sphere {
-
-    fn bbox(&self) -> Option<Aabb>
-    {
+    fn bbox(&self) -> Option<Aabb> {
         Some(self.bbox)
     }
 
-    fn centroid(&self) -> Vec3
-    {
+    fn centroid(&self) -> Vec3 {
         self.center
     }
 
+    #[allow(clippy::many_single_char_names)]
     fn intersect(&self, ray: &Ray, range: Range) -> Option<Surfel> {
         let a = dot(ray.direction, ray.direction);
         let v = ray.origin - self.center;
@@ -76,7 +74,13 @@ impl Object for Sphere {
             let hit_point = ray.point_at(t);
             let normal = self.normal_at(hit_point);
 
-            return Some(Surfel{t, hit_point, normal, material_id: self.material_id, n_offset: 0.0001});
+            return Some(Surfel {
+                t,
+                hit_point,
+                normal,
+                material_id: self.material_id,
+                n_offset: 0.0001,
+            });
         }
 
         None

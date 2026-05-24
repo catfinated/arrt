@@ -1,15 +1,13 @@
-use std::ops::{Add, Mul, Sub, Div, AddAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 fn clamp(val: f32, lo: f32, hi: f32) -> f32 {
     if val < lo {
         lo
-    }
-    else if val > hi {
+    } else if val > hi {
         hi
-    }
-    else {
+    } else {
         val
     }
 }
@@ -18,48 +16,63 @@ fn clamp(val: f32, lo: f32, hi: f32) -> f32 {
 pub struct ColorRGB {
     pub r: f32,
     pub g: f32,
-    pub b: f32
+    pub b: f32,
 }
 
 impl ColorRGB {
+    #[must_use]
     pub fn new(r: f32, g: f32, b: f32) -> Self {
-        ColorRGB{ r, g, b }
+        ColorRGB { r, g, b }
     }
 
+    #[must_use]
     pub fn fill(val: f32) -> Self {
-        ColorRGB::new(val, val, val )
+        ColorRGB::new(val, val, val)
     }
 
+    #[must_use]
     pub fn black() -> Self {
         ColorRGB::fill(0.0_f32)
     }
 
+    #[must_use]
     pub fn white() -> Self {
         ColorRGB::fill(1.0_f32)
     }
 
+    #[must_use]
     pub fn red() -> Self {
         ColorRGB::new(1.0_f32, 0.0_f32, 0.0_f32)
     }
 
+    #[must_use]
     pub fn green() -> Self {
         ColorRGB::new(0.0_f32, 1.0_f32, 0.0_f32)
     }
 
+    #[must_use]
     pub fn blue() -> Self {
         ColorRGB::new(0.0_f32, 0.0_f32, 1.0_f32)
     }
 
+    #[must_use]
     pub fn clamp(&self, lo: f32, hi: f32) -> Self {
-        ColorRGB{ r: clamp(self.r, lo, hi),
-                  g: clamp(self.g, lo, hi),
-                  b: clamp(self.b, lo, hi) }
+        ColorRGB {
+            r: clamp(self.r, lo, hi),
+            g: clamp(self.g, lo, hi),
+            b: clamp(self.b, lo, hi),
+        }
     }
 
+    // Colors are clamped to [0,1] before calling this; truncation and sign loss are expected.
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn to_irgb(&self) -> [u8; 3] {
-        [(self.r * 255.0).round() as u8,
-         (self.g * 255.0).round() as u8,
-         (self.b * 255.0).round() as u8,]
+        [
+            (self.r * 255.0).round() as u8,
+            (self.g * 255.0).round() as u8,
+            (self.b * 255.0).round() as u8,
+        ]
     }
 }
 
@@ -77,9 +90,11 @@ impl Add for ColorRGB {
     type Output = Self;
 
     fn add(self, other: Self) -> Self {
-        ColorRGB { r: self.r + other.r,
-                   g: self.g + other.g,
-                   b: self.b + other.b }
+        ColorRGB {
+            r: self.r + other.r,
+            g: self.g + other.g,
+            b: self.b + other.b,
+        }
     }
 }
 
@@ -87,9 +102,11 @@ impl Sub for ColorRGB {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        ColorRGB { r: self.r - other.r,
-                   g: self.g - other.g,
-                   b: self.b - other.b }
+        ColorRGB {
+            r: self.r - other.r,
+            g: self.g - other.g,
+            b: self.b - other.b,
+        }
     }
 }
 
@@ -97,9 +114,11 @@ impl Mul for ColorRGB {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self {
-        ColorRGB { r: self.r * other.r,
-                   g: self.g * other.g,
-                   b: self.b * other.b }
+        ColorRGB {
+            r: self.r * other.r,
+            g: self.g * other.g,
+            b: self.b * other.b,
+        }
     }
 }
 
@@ -107,9 +126,11 @@ impl Mul<f32> for ColorRGB {
     type Output = Self;
 
     fn mul(self, f: f32) -> Self {
-        ColorRGB { r: self.r * f,
-                   g: self.g * f,
-                   b: self.b * f }
+        ColorRGB {
+            r: self.r * f,
+            g: self.g * f,
+            b: self.b * f,
+        }
     }
 }
 
@@ -125,8 +146,10 @@ impl Div<f32> for ColorRGB {
     type Output = Self;
 
     fn div(self, f: f32) -> ColorRGB {
-        ColorRGB { r: self.r / f,
-                   g: self.g / f,
-                   b: self.b / f }
+        ColorRGB {
+            r: self.r / f,
+            g: self.g / f,
+            b: self.b / f,
+        }
     }
 }

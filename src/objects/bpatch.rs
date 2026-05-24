@@ -1,14 +1,13 @@
-use std::path::Path;
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::path::Path;
 
-use serde;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::math::Vec3;
 use super::aabb::Aabb;
 use super::mesh::{compute_normals, Mesh, Triangle};
 use super::transform::Transform;
+use crate::math::Vec3;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BPatchConfig {
@@ -17,23 +16,25 @@ pub struct BPatchConfig {
     pub slices: u32,
     pub flip_normals: bool,
     #[serde(default)]
-    pub transform: Transform
+    pub transform: Transform,
 }
 
 #[derive(Debug)]
 struct Patch {
-    points: [Vec3; 16]
+    points: [Vec3; 16],
 }
 
 impl Default for Patch {
     fn default() -> Self {
-        Patch{ points: [Vec3::zeros(); 16] }
+        Patch {
+            points: [Vec3::zeros(); 16],
+        }
     }
 }
 
 fn read_bpt(fpath: &Path) -> Vec<Patch> {
-    println!("loading patch from: {:#?}", fpath);
-    
+    println!("loading patch from: {}", fpath.display());
+
     let file = match File::open(fpath) {
         Err(why) => panic!("failed to open {}: {}", fpath.display(), why),
         Ok(file) => file,
@@ -63,30 +64,28 @@ fn read_bpt(fpath: &Path) -> Vec<Patch> {
     patches
 }
 
-fn blend(u: f32, points: &[Vec3]) -> Vec3
-{
-  let one_minus_u = 1.0_f32 - u;
+fn blend(u: f32, points: &[Vec3]) -> Vec3 {
+    let one_minus_u = 1.0_f32 - u;
 
-  let b0 = one_minus_u.powf(3.0_f32);
-  let b1 = (3.0_f32 * u) * one_minus_u.powf(2.0_f32);
-  let b2 = (3.0_f32 * u.powf(2.0_f32)) * one_minus_u;
-  let b3 = u.powf(3.0_f32);
-  
-  points[0] * b0 + points[1] * b1 + points[2] * b2 + points[3] * b3
+    let b0 = one_minus_u.powf(3.0_f32);
+    let b1 = (3.0_f32 * u) * one_minus_u.powf(2.0_f32);
+    let b2 = (3.0_f32 * u.powf(2.0_f32)) * one_minus_u;
+    let b3 = u.powf(3.0_f32);
+
+    points[0] * b0 + points[1] * b1 + points[2] * b2 + points[3] * b3
 }
 
-fn interpolate(u: f32, v: f32, patch: &Patch) -> Vec3
-{
+fn interpolate(u: f32, v: f32, patch: &Patch) -> Vec3 {
     let mut curve = [Vec3::zeros(); 4];
 
     for (i, elem) in curve.iter_mut().enumerate() {
-        *elem = blend(u, &patch.points[4*i..(4*i)+4]);
+        *elem = blend(u, &patch.points[4 * i..(4 * i) + 4]);
     }
 
     blend(v, &curve)
 }
 
-
+#[allow(clippy::cast_precision_loss)]
 pub fn tessellate_bpatch(dpath: &String, config: &BPatchConfig) -> Mesh {
     let mut vertices = Vec::new();
     let mut triangles = Vec::new();
@@ -109,7 +108,7 @@ pub fn tessellate_bpatch(dpath: &String, config: &BPatchConfig) -> Mesh {
                 box_min.set_x(point.x().min(box_min.x()));
                 box_min.set_y(point.y().min(box_min.y()));
                 box_min.set_z(point.z().min(box_min.z()));
-    
+
                 box_max.set_x(point.x().max(box_max.x()));
                 box_max.set_y(point.y().max(box_max.y()));
                 box_max.set_z(point.z().max(box_max.z()));
@@ -120,20 +119,33 @@ pub fn tessellate_bpatch(dpath: &String, config: &BPatchConfig) -> Mesh {
 
         for i in 0..config.slices {
             for j in 0..config.slices {
-                    // todo: might have top/bottom reversed here
-                    let i0 = offset + (i * s + j) as usize; // bottom left
-                    let i1 = offset + (i * s + (j + 1)) as usize; // bottom right
-                    let i2 = offset + ((i + 1) * s + (j + 1)) as usize; // top right
-                    let i3 = offset + ((i + 1) * s + j) as usize; // top left
+                // todo: might have top/bottom reversed here
+                let i0 = offset + (i * s + j) as usize; // bottom left
+                let i1 = offset + (i * s + (j + 1)) as usize; // bottom right
+                let i2 = offset + ((i + 1) * s + (j + 1)) as usize; // top right
+                let i3 = offset + ((i + 1) * s + j) as usize; // top left
 
-                    triangles.push(Triangle{ i: i0, j: i1, k: i2 });
-                    triangles.push(Triangle{ i: i2, j: i3, k: i0 });
+                triangles.push(Triangle {
+                    i: i0,
+                    j: i1,
+                    k: i2,
+                });
+                triangles.push(Triangle {
+                    i: i2,
+                    j: i3,
+                    k: i0,
+                });
             }
         }
     }
 
     let bbox = Aabb::new(box_min, box_max);
     let normals = compute_normals(&vertices, &triangles, config.flip_normals);
-    println!("bpatch bbox: {:?}", bbox);
-    Mesh{ vertices, normals, triangles, bbox }
+    println!("bpatch bbox: {bbox:?}");
+    Mesh {
+        vertices,
+        triangles,
+        normals,
+        bbox,
+    }
 }
