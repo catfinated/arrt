@@ -14,6 +14,7 @@ use crate::lights::{AreaLight, Light, PointLight, SpotLight};
 use crate::objects::{
     bpatch, superquadric, Bvh, Instance, Material, MaterialMap, Mesh, Object, Plane, Sphere, Surfel,
 };
+use crate::render::texture::Texture;
 use crate::render::ColorRGB;
 
 use camera::CameraConfig;
@@ -157,5 +158,9 @@ impl Scene {
 
     pub fn material_for_surfel(&self, surfel: &Surfel) -> &Material {
         self.materials_map.get_material(surfel.material_id)
+    }
+
+    pub fn texture_for_surfel(&self, surfel: &Surfel) -> Option<&dyn Texture> {
+        self.materials_map.get_texture(surfel.material_id)
     }
 }

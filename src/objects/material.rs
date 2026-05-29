@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::math::Vec3;
 use crate::render::ColorRGB;
+use crate::render::texture::{Texture, TextureConfig};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -23,6 +24,7 @@ pub struct Material {
     pub ior: f32,
     pub shininess: f32,
     pub highlight: f32,
+    pub texture: Option<TextureConfig>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -31,6 +33,7 @@ pub struct MaterialID(pub usize);
 pub struct MaterialMap {
     materials: Vec<Material>,
     name_to_id: HashMap<String, MaterialID>,
+    textures: Vec<Option<Box<dyn Texture>>>,
 }
 
 pub struct Surfel {
@@ -39,6 +42,7 @@ pub struct Surfel {
     pub normal: Vec3,
     pub material_id: MaterialID,
     pub n_offset: f32,
+    pub uv: Option<(f32, f32)>,
 }
 
 impl Default for Material {
@@ -57,6 +61,7 @@ impl Default for Material {
             ior: 0.0_f32,
             shininess: 1.0_f32,
             highlight: 0.0_f32,
+            texture: None,
         }
     }
 }
@@ -71,6 +76,11 @@ impl MaterialMap {
             log::debug!("{mat:?}");
         }
 
+        let textures = materials
+            .iter()
+            .map(|m| m.texture.as_ref().map(TextureConfig::build))
+            .collect();
+
         let mut name_to_id = HashMap::new();
         for (i, mat) in materials.iter().enumerate() {
             name_to_id.insert(mat.name.clone(), MaterialID(i));
@@ -78,6 +88,7 @@ impl MaterialMap {
         MaterialMap {
             materials,
             name_to_id,
+            textures,
         }
     }
 
@@ -87,5 +98,9 @@ impl MaterialMap {
 
     pub fn get_material(&self, id: MaterialID) -> &Material {
         &self.materials[id.0]
+    }
+
+    pub fn get_texture(&self, id: MaterialID) -> Option<&dyn Texture> {
+        self.textures[id.0].as_deref()
     }
 }

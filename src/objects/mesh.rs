@@ -116,6 +116,7 @@ impl Triangle {
             normal,
             material_id,
             n_offset: 0.0_f32,
+            uv: None,
         })
     }
 }
@@ -306,6 +307,7 @@ impl Object for Instance {
                 normal,
                 material_id,
                 n_offset: 0.000_000_000_1,
+                uv: surf.uv,
             });
         }
         surfel

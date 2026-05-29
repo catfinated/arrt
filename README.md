@@ -22,15 +22,17 @@ This ray tracer is extremely basic right now but the following features are incl
   * Refraction
 * Adaptive super sampling (1–2x)
 * Parallelized tracing and rendering with rayon
+* Texture mapping (image and procedural checker)
 
 Here are some examples of what it can currently produce:
 
-|                               |                                      |
-| ----------------------------- | ------------------------------------ |
-| ![Example 1](docs/scene.png)  | ![Example 2](docs/bunnies.png)       |
-| ![Example 3](docs/cow.png)    | ![Example 4](docs/cow2.png)          |
-| ![Example 5](docs/dragon.png) | ![Example 6](docs/glass_teapot.png)  |
-| ![Example 7](docs/bpsq.png)   | ![Example 8](docs/area_light2.png)   |
+|                                 |                                      |
+| ------------------------------- | ------------------------------------ |
+| ![Example 1](docs/scene.png)    | ![Example 2](docs/bunnies.png)       |
+| ![Example 3](docs/cow.png)      | ![Example 4](docs/cow2.png)          |
+| ![Example 5](docs/dragon.png)   | ![Example 6](docs/glass_teapot.png)  |
+| ![Example 7](docs/bpsq.png)     | ![Example 8](docs/area_light2.png)   |
+| ![Example 9](docs/textures.png) |                                      |
 
 ## Building
 
@@ -223,5 +225,4 @@ default to 1.0; `kr`, `kt`, `ior`, `highlight` default to 0.0).
 
 ## TODO
 
-* texture mapping
 * perlin noise

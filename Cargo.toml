@@ -17,6 +17,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yml = "0.0.12"
 rayon = "1.12"
 rand = "0.8"
+image = "0.25"
 
 [profile.release]
 opt-level = 3

@@ -186,6 +186,11 @@ impl RayTracer {
         let v = normalize(self.camera.eye - surfel.hit_point); // from P to viewer
         let mut visible_lights = Vec::new();
 
+        let diffuse_color = self
+            .scene
+            .texture_for_surfel(surfel)
+            .map_or(material.diffuse, |tex| tex.color(surfel.uv, surfel.hit_point));
+
         for light in self.scene.lights() {
             let dirs = light.sample_directions_from(surfel.hit_point);
             let num_samples = dirs.len();
@@ -220,7 +225,7 @@ impl RayTracer {
                 // diffuse reflection from light sources
                 // + kd * Ilj * Cd * cos(theta)
                 let diffuse =
-                    intensity * light.diffuse() * material.kd * material.diffuse * n_dot_l;
+                    intensity * light.diffuse() * material.kd * diffuse_color * n_dot_l;
 
                 // specular reflection from light sources
                 // + ks * Ilj * Cs * cos(phi)^n

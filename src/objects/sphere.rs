@@ -1,3 +1,5 @@
+use std::f32::consts::{FRAC_PI_2, PI};
+
 use serde::{Deserialize, Serialize};
 
 use crate::math::{dot, in_range, normalize, Range, Ray, Vec3};
@@ -73,6 +75,16 @@ impl Object for Sphere {
         if in_range(range, t) {
             let hit_point = ray.point_at(t);
             let normal = self.normal_at(hit_point);
+            // Spherical UV mapping:
+            //   phi   = azimuth in XZ plane, atan2(z, x) in [-PI, PI]
+            //   u     = 1 - (phi + PI) / (2*PI), so u=0 at phi=PI (back) and wraps to u=1
+            //   theta = elevation, asin(y) in [-PI/2, PI/2]
+            //   v     = (theta + PI/2) / PI, so v=0 at south pole and v=1 at north pole
+            let p = normalize(hit_point - self.center);
+            let phi = p.z().atan2(p.x());
+            let u = 1.0 - (phi + PI) / (2.0 * PI);
+            let theta = p.y().clamp(-1.0, 1.0).asin();
+            let v = (theta + FRAC_PI_2) / PI;
 
             return Some(Surfel {
                 t,
@@ -80,6 +92,7 @@ impl Object for Sphere {
                 normal,
                 material_id: self.material_id,
                 n_offset: 0.0001,
+                uv: Some((u, v)),
             });
         }
 

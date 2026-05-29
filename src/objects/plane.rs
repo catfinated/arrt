@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::math::{dot, in_range, Range, Ray, Vec3};
+use crate::math::{cross, dot, in_range, normalize, Range, Ray, Vec3};
 
 use super::aabb::Aabb;
 use super::material::{MaterialID, Surfel};
@@ -16,14 +16,30 @@ pub struct PlaneConfig {
 pub struct Plane {
     point: Vec3,
     normal: Vec3,
+    tangent_u: Vec3,
+    tangent_v: Vec3,
     material_id: MaterialID,
 }
 
 impl Plane {
     pub fn new(config: &PlaneConfig, material_id: MaterialID) -> Self {
+        // Planar UV mapping: project hit_point onto two tangent vectors.
+        // tangent_u = normalize(reference × n), tangent_v = normalize(n × tangent_u)
+        // where reference avoids being parallel to n.
+        // u and v are world-space distances from the plane's point; textures tile naturally.
+        let n = normalize(config.normal);
+        let reference = if n.y().abs() < 0.9 {
+            Vec3::new(0.0, 1.0, 0.0)
+        } else {
+            Vec3::new(1.0, 0.0, 0.0)
+        };
+        let tangent_u = normalize(cross(reference, n));
+        let tangent_v = normalize(cross(n, tangent_u));
         Plane {
             point: config.point,
             normal: config.normal,
+            tangent_u,
+            tangent_v,
             material_id,
         }
     }
@@ -53,12 +69,16 @@ impl Object for Plane {
                 if ndotrd > 0.0_f32 {
                     normal = -normal;
                 }
+                let offset = hit_point - self.point;
+                let u = dot(offset, self.tangent_u);
+                let v = dot(offset, self.tangent_v);
                 surf = Some(Surfel {
                     t,
                     hit_point,
                     normal,
                     material_id: self.material_id,
                     n_offset: 0.0_f32,
+                    uv: Some((u, v)),
                 });
             }
         }
