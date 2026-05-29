@@ -188,6 +188,19 @@ planes are unbounded and handled separately.
     sharpness: 2        # falloff exponent
 ```
 
+**Area light** — a rectangular emitter defined by a transform applied to a unit XZ-plane
+rectangle. Samples are stratified across the surface; `samples` must be a perfect square.
+Soft shadows improve with higher sample counts at the cost of render time.
+```yaml
+- !Area
+    color:   {r: 1.0, g: 1.0, b: 1.0}
+    samples: 64         # must be a perfect square (e.g. 4, 16, 25, 64, 100)
+    transform:
+      translate: [0.0, 3.0, 0.0]
+      rotate:    [160.0, 0.0, 0.0]  # tip the rectangle to face downward
+      scale:     [2.0, 2.0, 2.0]
+```
+
 ### Materials
 
 Materials live in a `materials.yaml` file next to the scene file. Each entry is named and
@@ -222,3 +235,42 @@ referenced by objects using the `material:` key.
 
 All color channels and coefficients default to sensible values when omitted (`ka`, `kd`, `ks`
 default to 1.0; `kr`, `kt`, `ior`, `highlight` default to 0.0).
+
+An optional `texture` field modulates the diffuse color. Three texture types are supported:
+
+**Image** — wraps a JPEG or PNG file onto the object using UV coordinates. Tiles by default.
+```yaml
+- name: earth
+  diffuse: {r: 1.0, g: 1.0, b: 1.0}
+  ka: 0.0
+  kd: 1.0
+  ks: 0.0
+  texture: !Image
+    file: textures/EarthTM0360.jpg
+```
+
+**Checker** — procedural alternating grid. `scale` controls how many squares per world unit.
+UV coordinates are used when available (spheres, planes); falls back to world-space XZ for meshes.
+```yaml
+- name: checker_floor
+  diffuse: {r: 1.0, g: 1.0, b: 1.0}
+  texture: !Checker
+    even:  {r: 1.0, g: 1.0, b: 1.0}
+    odd:   {r: 0.1, g: 0.1, b: 0.1}
+    scale: 5.0
+```
+
+**Marble** — procedural veined marble using Perlin noise. The sine wave runs along the world
+x-axis; `scale` sets its spatial frequency, `frequency` multiplies the sine argument, and
+`amplitude` controls how much turbulence distorts the veins.
+```yaml
+- name: emerald_marble
+  ambient:  {r: 0.023, g: 0.175, b: 0.022}
+  diffuse:  {r: 0.076, g: 0.614, b: 0.076}
+  specular: {r: 0.633, g: 0.729, b: 0.633}
+  shininess: 76
+  texture: !Marble
+    scale:     1.0
+    frequency: 1.0
+    amplitude: 50.0
+```
