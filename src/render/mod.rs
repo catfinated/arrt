@@ -1,5 +1,6 @@
 pub mod color;
 pub mod framebuffer;
+pub mod perlin;
 pub mod texture;
 
 mod pixel;

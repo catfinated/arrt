@@ -189,7 +189,9 @@ impl RayTracer {
         let diffuse_color = self
             .scene
             .texture_for_surfel(surfel)
-            .map_or(material.diffuse, |tex| tex.color(surfel.uv, surfel.hit_point));
+            .map_or(material.diffuse, |tex| {
+                tex.color(surfel.uv, surfel.hit_point, material.diffuse)
+            });
 
         for light in self.scene.lights() {
             let dirs = light.sample_directions_from(surfel.hit_point);

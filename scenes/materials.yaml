@@ -424,6 +424,46 @@
   kd: 0.5
   ks: 0.2
   kr: 0.75
+- name: emerald_marble
+  ambient:
+    r: 0.023
+    g: 0.175
+    b: 0.022
+  diffuse:
+    r: 0.076
+    g: 0.614
+    b: 0.076
+  specular:
+    r: 0.633
+    g: 0.729
+    b: 0.633
+  shininess: 76
+  ks: 0.5
+  ka: 1.0
+  kd: 0.5
+  kr: 0.0
+  texture: !Marble
+    scale: 1.0
+    frequency: 1.0
+    amplitude: 50.0
+- name: ruby_marble
+  ambient:
+    r: 0.175
+    g: 0.012
+    b: 0.012
+  diffuse:
+    r: 0.614
+    g: 0.041
+    b: 0.041
+  specular:
+    r: 0.3
+    g: 0.3
+    b: 0.3
+  shininess: 10
+  texture: !Marble
+    scale: 1.0
+    frequency: 2.0
+    amplitude: 100.0
 - name: earth
   ambient:
     r: 1.0
