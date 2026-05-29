@@ -81,8 +81,14 @@ struct CheckerTexture {
 
 impl Texture for CheckerTexture {
     fn color(&self, uv: Option<(f32, f32)>, point: Vec3, _diffuse: ColorRGB) -> ColorRGB {
-        let (u, v) = uv.unwrap_or_else(|| (point.x(), point.z()));
-        let sines = (u * self.scale).floor() + (v * self.scale).floor();
+        let sines = if let Some((u, v)) = uv {
+            (u * self.scale).floor() + (v * self.scale).floor()
+        } else {
+            // Use all three world-space axes so vertical surfaces checker rather than stripe.
+            (point.x() * self.scale).floor()
+                + (point.y() * self.scale).floor()
+                + (point.z() * self.scale).floor()
+        };
         if sines.rem_euclid(2.0) < 1.0 {
             self.even
         } else {

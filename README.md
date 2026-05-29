@@ -26,13 +26,13 @@ This ray tracer is extremely basic right now but the following features are incl
 
 Here are some examples of what it can currently produce:
 
-|                                  |                                      |
-| -------------------------------- | ------------------------------------ |
-| ![Example 1](docs/scene.png)     | ![Example 2](docs/bunnies.png)       |
-| ![Example 3](docs/cow.png)       | ![Example 4](docs/cow2.png)          |
-| ![Example 5](docs/dragon.png)    | ![Example 6](docs/glass_teapot.png)  |
-| ![Example 7](docs/bpsq.png)      | ![Example 8](docs/area_light2.png)   |
-| ![Example 9](docs/textures2.png) |                                      |
+|                                  |                                     |
+|----------------------------------|-------------------------------------|
+| ![Example 1](docs/scene.png)     | ![Example 2](docs/bunnies.png)      |
+| ![Example 3](docs/cow.png)       | ![Example 4](docs/cow2.png)         |
+| ![Example 5](docs/dragon.png)    | ![Example 6](docs/glass_teapot.png) |
+| ![Example 7](docs/bpsq.png)      | ![Example 8](docs/area_light2.png)  |
+| ![Example 9](docs/textures2.png) | ![Example 10](docs/checker.png)     |
 
 ## Building
 
@@ -250,7 +250,7 @@ An optional `texture` field modulates the diffuse color. Three texture types are
 ```
 
 **Checker** — procedural alternating grid. `scale` controls how many squares per world unit.
-UV coordinates are used when available (spheres, planes); falls back to world-space XZ for meshes.
+UV coordinates are used when available (spheres, planes); falls back to world-space XYZ for meshes.
 ```yaml
 - name: checker_floor
   diffuse: {r: 1.0, g: 1.0, b: 1.0}

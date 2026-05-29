@@ -424,6 +424,58 @@
   kd: 0.5
   ks: 0.2
   kr: 0.75
+- name: pink
+  ambient:
+    r: 1.0
+    g: 0.41
+    b: 0.71
+  diffuse:
+    r: 1.0
+    g: 0.41
+    b: 0.71
+  specular:
+    r: 1.0
+    g: 0.8
+    b: 0.9
+  ka: 0.3
+  kd: 0.8
+  ks: 0.3
+  shininess: 20
+- name: pale_blue
+  ambient:
+    r: 0.53
+    g: 0.81
+    b: 0.98
+  diffuse:
+    r: 0.53
+    g: 0.81
+    b: 0.98
+  specular:
+    r: 0.8
+    g: 0.9
+    b: 1.0
+  ka: 0.3
+  kd: 0.8
+  ks: 0.2
+  shininess: 20
+- name: checker_mesh
+  ambient:
+    r: 0.4
+    g: 0.4
+    b: 0.4
+  diffuse:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  specular:
+    r: 1.0
+    g: 1.0
+    b: 1.0
+  shininess: 30
+  texture: !Checker
+    even:  {r: 1.0, g: 1.0, b: 1.0}
+    odd:   {r: 0.05, g: 0.05, b: 0.05}
+    scale: 8.0
 - name: emerald_marble
   ambient:
     r: 0.023
