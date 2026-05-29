@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::lights::PointLight;
-use crate::lights::SpotLight;
+use crate::lights::{AreaLightConfig, PointLight, SpotLight};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum LightsConfig {
     Point(PointLight),
     Spot(SpotLight),
+    Area(AreaLightConfig),
 }

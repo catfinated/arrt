@@ -187,41 +187,57 @@ impl RayTracer {
         let mut visible_lights = Vec::new();
 
         for light in self.scene.lights() {
-            let l = normalize(light.direction_from(surfel.hit_point)); // from P to light
-            let mut intensity = light.intensity_at(l); // for spot lights
+            let dirs = light.sample_directions_from(surfel.hit_point);
+            let num_samples = dirs.len();
+            let mut light_contrib = ColorRGB::black();
+            let mut light_visible = false;
 
-            // shadows
-            if dot(n, l) > 0.0_f32 {
-                // hit pint faces towards light
-                let ray = Ray {
-                    origin: surfel.hit_point + (0.01_f32 * n),
-                    direction: l,
-                    depth: curr_depth,
-                };
-                intensity = self.shadow_intensity(&ray, intensity);
+            for dir in &dirs {
+                let l = normalize(*dir);
+                let mut intensity = light.intensity_at(l); // for spot lights
+
+                // shadows
+                if dot(n, l) > 0.0_f32 {
+                    let ray = Ray {
+                        origin: surfel.hit_point + (0.01_f32 * n),
+                        direction: l,
+                        depth: curr_depth,
+                    };
+                    intensity = self.shadow_intensity(&ray, intensity);
+                }
+
+                if intensity == 0.0_f32 {
+                    continue;
+                }
+
+                light_visible = true;
+
+                let n_dot_l = dot(n, l).max(0.0_f32);
+                let h = normalize(l + v);
+                let n_dot_h = dot(n, h).max(0.0_f32);
+                let exp = n_dot_h.powf(material.shininess);
+
+                // diffuse reflection from light sources
+                // + kd * Ilj * Cd * cos(theta)
+                let diffuse =
+                    intensity * light.diffuse() * material.kd * material.diffuse * n_dot_l;
+
+                // specular reflection from light sources
+                // + ks * Ilj * Cs * cos(phi)^n
+                let specular =
+                    intensity * light.specular() * material.ks * material.specular * exp;
+
+                light_contrib += diffuse + specular;
             }
 
-            if intensity == 0.0_f32 {
-                continue;
+            #[allow(clippy::cast_precision_loss)]
+            {
+                color += light_contrib / num_samples as f32;
             }
 
-            visible_lights.push(light.clone());
-
-            let n_dot_l = dot(n, l).max(0.0_f32);
-            let h = normalize(l + v);
-            let n_dot_h = dot(n, h).max(0.0_f32);
-            let exp = n_dot_h.powf(material.shininess);
-
-            // diffuse reflection from light sources
-            // + kd * Ilj * Cd * cos(theta)
-            // todo texture mapping
-            let diffuse = intensity * light.diffuse() * material.kd * material.diffuse * n_dot_l;
-
-            // specular reflection from light sources
-            // + ks * Ilj * Cs * cos(phi)^n
-            let specular = intensity * light.specular() * material.ks * material.specular * exp;
-
-            color += diffuse + specular;
+            if light_visible {
+                visible_lights.push(light.clone());
+            }
         }
 
         // reflections

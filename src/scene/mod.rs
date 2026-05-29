@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crate::lights::{Light, PointLight, SpotLight};
+use crate::lights::{AreaLight, Light, PointLight, SpotLight};
 use crate::objects::{
     bpatch, superquadric, Bvh, Instance, Material, MaterialMap, Mesh, Object, Plane, Sphere, Surfel,
 };
@@ -62,6 +62,9 @@ impl Scene {
                 }
                 LightsConfig::Spot(sl) => {
                     lights.push(Arc::new(SpotLight { ..*sl }));
+                }
+                LightsConfig::Area(al) => {
+                    lights.push(Arc::new(AreaLight::new(al)));
                 }
             }
         }

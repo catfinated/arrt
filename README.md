@@ -16,7 +16,7 @@ This ray tracer is extremely basic right now but the following features are incl
   * Instancing
 * Spheres and planes
 * Bounding volume hierarchy based on axis aligned bounding boxes
-* Phong/Hall shading with point and spot light sources
+* Phong/Hall shading with point, spot, and area light sources
   * Shadows
   * Reflection
   * Refraction
@@ -25,12 +25,12 @@ This ray tracer is extremely basic right now but the following features are incl
 
 Here are some examples of what it can currently produce:
 
-|                               |                                     |
-| ----------------------------- | ----------------------------------- |
-| ![Example 1](docs/scene.png)  | ![Example 2](docs/bunnies.png)      |
-| ![Example 3](docs/cow.png)    | ![Example 4](docs/cow2.png)         |
-| ![Example 5](docs/dragon.png) | ![Example 6](docs/glass_teapot.png) |
-| ![Example 7](docs/bpsq.png)   |                                     |
+|                               |                                      |
+| ----------------------------- | ------------------------------------ |
+| ![Example 1](docs/scene.png)  | ![Example 2](docs/bunnies.png)       |
+| ![Example 3](docs/cow.png)    | ![Example 4](docs/cow2.png)          |
+| ![Example 5](docs/dragon.png) | ![Example 6](docs/glass_teapot.png)  |
+| ![Example 7](docs/bpsq.png)   | ![Example 8](docs/area_light2.png)   |
 
 ## Building
 
@@ -223,6 +223,5 @@ default to 1.0; `kr`, `kt`, `ior`, `highlight` default to 0.0).
 
 ## TODO
 
-* area lights
 * texture mapping
 * perlin noise

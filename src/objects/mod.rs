@@ -8,7 +8,7 @@ pub mod plane;
 pub mod sphere;
 pub mod superquadric;
 
-mod transform;
+pub mod transform;
 
 pub use bvh::Bvh;
 pub use material::{Material, MaterialMap, Surfel};

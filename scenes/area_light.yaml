@@ -1,0 +1,75 @@
+bgcolor:
+  r: 0
+  g: 0
+  b: 0.2
+width: 512
+height: 512
+ambient:
+  r: 1.0
+  g: 1.0
+  b: 1.0
+camera:
+  eye:
+    - 1.0
+    - 1.0
+    - 6.0
+  up:
+    - 0.0
+    - 1.0
+    - 0.0
+  look_at:
+    - 0.0
+    - 0.0
+    - 0.0
+  dist: 1.0
+  fov: 45.0
+objects:
+  - !Sphere
+      center:
+        - -1.0
+        - 0.25
+        - -1.0
+      radius: 0.5
+      material: ruby
+  - !Model
+      mesh: models/bound-bunny_5k.smf
+      material: emerald
+      transform:
+        translate:
+          - 1.0
+          - 0.5
+          - -1.25
+        scale:
+          - 1.2
+          - 1.2
+          - 1.2
+  - !Plane
+      point:
+        - 0.0
+        - -0.5
+        - 0.0
+      normal:
+        - 0.0
+        - 1.0
+        - 0.0
+      material: gold
+lights:
+  - !Area
+      transform:
+        translate:
+          - 0.0
+          - 2.0
+          - -1.0
+        rotate:
+          - 160.0
+          - 0.0
+          - 0.0
+        scale:
+          - 0.5
+          - 0.5
+          - 0.5
+      samples: 100
+      color:
+        r: 1.0
+        g: 1.0
+        b: 1.0
